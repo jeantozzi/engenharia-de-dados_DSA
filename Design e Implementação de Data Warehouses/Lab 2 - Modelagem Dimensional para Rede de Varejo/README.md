@@ -16,8 +16,7 @@ Eles precisam obter total de vendas e a quantidade vendida por produto, por dia 
 Data | Nome Promoção | Total de Vendas
 --- | --- | ---
 06/03/2023 | Sem promoção | R$ 21.400,89
-13/03/2023 | Promoção Especial 1 | R$ 15.876,23 
-13 Março, 2023Promoção Especial 1
+13/03/2023 | Promoção Especial 1 | R$ 15.876,23
 
 Os gerentes não têm certeza sobre quais filtros deveriam ser usados nos relatórios e pediram sua ajuda com algumas propostas.
 
