@@ -1,0 +1,3 @@
+[submodule "airbyte"]
+	path = "Design e Implementação de Data Warehouses/Lab 4 - Capacity Planning de Data Warehouse com Airbyte/airbyte"
+	url = https://github.com/airbytehq/airbyte
