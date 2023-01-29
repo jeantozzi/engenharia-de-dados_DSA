@@ -6,3 +6,4 @@ Link para mais informações: https://www.datascienceacademy.com.br/course/desig
 
 - [Lab 1 - Modelagem Lógica de Dados](https://github.com/jeantozzi/engenharia-de-dados_DSA/tree/main/Design%20e%20Implementa%C3%A7%C3%A3o%20de%20Data%20Warehouses/Lab%201%20-%20Modelagem%20L%C3%B3gica%20de%20Dados) 
 - [Lab 2 - Modelagem Dimensional para Rede de Varejo](https://github.com/jeantozzi/engenharia-de-dados_DSA/tree/main/Design%20e%20Implementa%C3%A7%C3%A3o%20de%20Data%20Warehouses/Lab%202%20-%20Modelagem%20Dimensional%20para%20Rede%20de%20Varejo)
+- [Lab 3 - Linguagem SQL para Engenheiros de Dados](https://github.com/jeantozzi/engenharia-de-dados_DSA/tree/main/Design%20e%20Implementa%C3%A7%C3%A3o%20de%20Data%20Warehouses/Lab%203%20-%20Linguagem%20SQL%20para%20Engenheiros%20de%20Dados)
