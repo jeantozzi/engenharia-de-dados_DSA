@@ -33,3 +33,9 @@ A JoiaRara Corp. trabalha com diferentes transportadoras, que coletam os produto
 O valor de frete de cada entrega varia de acordo com o produto e a localidade de entrega, e a JoiaRara Corp. precisa compreender como o custo com o frete pode ser reduzido.
 
 A JoiaRara Corp. também precisa comparar o tempo gasto por cada transportadora para entrega, medindo a diferença entre a data de coleta do produto no depósito e a data de entrega ao cliente. 
+
+O cliente paga o frete em compras acima de R$100. Independente disso, cada transportadora recebe o pagamento pelo seu serviço.
+
+A empresa tem o cadastro dos clientes, das transportadoras e dos depósitos.
+
+Relatórios financeiros, de entregas, de custo de frete e da performance das transportadoras (tempo de entrega) serão necessários.

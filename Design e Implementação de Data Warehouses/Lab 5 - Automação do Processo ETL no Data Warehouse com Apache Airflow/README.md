@@ -20,7 +20,7 @@ A visão geral do que faremos neste lab consta na imagem abaixo:
 
 Para a criação do Ambiente Virtual, no qual isolaremos as instalações de pacotes e dependências, basta executar os comandos abaixo:
 
-```
+```bash
 conda create --name dsa_dw_lab-5
 conda activate dsa_dw_lab-5
 ```
@@ -62,7 +62,7 @@ Com o acesso estabelecido, siga os passos ilustrados abaixo para criação do Sc
 
 Certifique-se de que seu terminal está na pasta `/airflow` e execute os comandos abaixo:
 
-```
+```bash
 docker-compose up airflow-init
 docker-compose up -d
 ```
@@ -92,7 +92,7 @@ Como podemos conferir na imagem abaixo, atualmente não há tabelas (nem dados, 
 
 Os scripts devem ser inseridos na pasta `/airflow/dags`, e lá as DAGs serão listadas de acordo com o `dag_id` definido no código (no nosso caso: `dag_lab5_dsa`), conforme código e imagem abaixo:
 
-```
+```python
 dag_lab5_dsa = DAG(dag_id = "dag_lab5_dsa",
                    default_args = args,
                    # schedule_interval='0 0 * * *',
