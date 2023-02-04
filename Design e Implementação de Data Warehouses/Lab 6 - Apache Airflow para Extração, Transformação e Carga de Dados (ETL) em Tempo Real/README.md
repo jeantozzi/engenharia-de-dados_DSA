@@ -39,3 +39,23 @@ O cliente paga o frete em compras acima de R$100. Independente disso, cada trans
 A empresa tem o cadastro dos clientes, das transportadoras e dos depósitos.
 
 Relatórios financeiros, de entregas, de custo de frete e da performance das transportadoras (tempo de entrega) serão necessários.
+
+### Modelagem Conceitual Inicial
+
+![modelo_1](./images/modelo_1.png)
+
+## Construção do DW
+
+### Configuração Inicial
+
+Para referências gerais sobre como operar a configuração incial, confira o [Lab 5 - Automação do Processo ETL no Data Warehouse com Apache Airflow](https://github.com/jeantozzi/engenharia-de-dados_DSA/tree/main/Design%20e%20Implementa%C3%A7%C3%A3o%20de%20Data%20Warehouses/Lab%205%20-%20Automa%C3%A7%C3%A3o%20do%20Processo%20ETL%20no%20Data%20Warehouse%20com%20Apache%20Airflow).
+
+Dentro do pgAdmin, criar os seguintes itens:
+- Banco de Dados: `dwlab6`
+- Schema: `lab6`
+
+### Modelagem Física e Criação da Estrutura
+
+Executando os comandos presentes no arquivo [cria_tabelas.sql](), criaremos no Postgres a estrutura que reflete a Modelagem Física abaixo:
+
+![modelo_2](./images/modelo_2.png)
