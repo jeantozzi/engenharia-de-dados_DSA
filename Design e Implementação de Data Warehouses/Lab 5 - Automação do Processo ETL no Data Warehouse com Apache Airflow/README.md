@@ -42,12 +42,10 @@ Primeiramente, acesse a interface através do link `localhost:1000` (a porta pad
 
 ![server_1](./images/server_1.png)
 
-![server_2](./images/server_2.png)
-
-![server_3](./images/server_3.png)
+![server_2](./images/server_3.png)
 *senha dsalabdw123, conforme definição no arquivo* 
 
-![server_4](./images/server_4.png)
+![server_3](./images/server_4.png)
 
 ### Criação do Schema
 
