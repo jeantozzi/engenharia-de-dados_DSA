@@ -27,7 +27,7 @@ conda activate dsa_dw_lab-5
 
 ## Criando os containers
 
-Para a criação dos containers Docker, basta executar `docker-compose up -d` na mesma pasta em que se localiza o arquivo `docker-compose.yaml`
+Para a criação dos containers Docker, basta executar `docker-compose up -d` na pasta raiz do repositório.
 
 ## Acessando e Configurando o SGBD
 
@@ -43,6 +43,7 @@ Primeiramente, acesse a interface através do link `localhost:1000` (a porta pad
 ![server_1](./images/server_1.png)
 
 ![server_2](./images/server_2.png)
+
 *senha dsalabdw123, conforme definição no arquivo* 
 
 ![server_3](./images/server_3.png)
