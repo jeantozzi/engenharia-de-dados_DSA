@@ -10,7 +10,7 @@ Para acessarmos o SGBD através do PGAdmin, será necessário executar o comando
 `docker run --name pgadmin -p 8080:8080 --network=bridge -e PGADMIN_DEFAULT_EMAIL=root@root.com PGADMIN_DEFAULT_PASSWORD=root -d dpage/pgadmin4`
 
 ## Modelo Relacional Final
-![modelo](modelo.png)
+![modelo](./images/modelo.png)
 
 ## Dados para Ingestão (primeiras 4 linhas para ilustração)
 ### TB_CATEGORIA 

@@ -19,6 +19,6 @@ Códigos de identificação únicos são usados em todos os registros e datas s�
 A empresa pretende implementar um sistema de informação que no futuro permita extrair relatórios sobre o funcionamento dos departamentos, como funcionários alocados por projeto e supervisores das equipes de alta performance.
 
 ## Solução
-![modelo](modelo.png)
+![modelo](./images/modelo.png)
 
 <b>Referência:</b> conferir o arquivo `DER_Lab-1`, criado no StarUML.

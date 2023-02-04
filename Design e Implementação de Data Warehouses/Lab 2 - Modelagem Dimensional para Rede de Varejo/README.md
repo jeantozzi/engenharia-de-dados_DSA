@@ -21,6 +21,6 @@ Data | Nome Promoção | Total de Vendas
 Os gerentes não têm certeza sobre quais filtros deveriam ser usados nos relatórios e pediram sua ajuda com algumas propostas.
 
 ## Solução
-![modelo](modelo.png)
+![modelo](./images/modelo.png)
 
 <b>Referência:</b> conferir o arquivo `MD_Lab-2.mdj`, criado no StarUML.

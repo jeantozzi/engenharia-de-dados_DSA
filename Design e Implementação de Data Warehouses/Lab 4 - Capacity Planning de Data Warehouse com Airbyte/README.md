@@ -57,7 +57,7 @@ Output:
 ### Criando um destino no Airbyte
 Preencha conforme abaixo:
 
-![destination](destination.png)
+![destination](./images/destination.png)
 
 ### Criando as fontes no Airbyte
 Antes de preencher, é necessário fazer com que os arquivos `.csv` sejam acessíveis para o Airbyte. Para isso, vamos executar os seguintes comandos:
@@ -72,14 +72,14 @@ docker cp /tmp/airbyte_local airbyte-server:/tmp/airbyte_local
 
 Preencha conforme abaixo, alternando com base em cada um dos três arquivos `.csv`:
 
-![source](source.png)
+![source](./images/source.png)
 
 ### Criando a conexão
 Será necessária a criação de uma conexão para cada fonte criada.
 
 Preencha conforme abaixo:
 
-![connection](connection.png)
+![connection](./images/connection.png)
 
 ### Tamanho do banco depois da carga ETL
 | pg_size_pretty |
