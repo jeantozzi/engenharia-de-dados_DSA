@@ -1,0 +1,4 @@
+id_pagamento,tipo_pagamento
+100,'Boleto'
+101,'PayPal'
+102,'PagSeguro'

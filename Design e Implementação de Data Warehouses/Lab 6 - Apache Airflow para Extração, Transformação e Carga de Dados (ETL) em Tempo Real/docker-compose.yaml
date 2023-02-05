@@ -1,0 +1,29 @@
+name: postgres-pgadmin
+services:
+  pgdatabase:
+    container_name: pg_database
+    image: postgres
+    environment:
+      - POSTGRES_USER=dsalabdw 
+      - POSTGRES_PASSWORD=dsalabdw123
+      - POSTGRES_DB=dwlab6
+    ports:
+      - "5432:5432"
+    networks:
+      - airflow_default
+    
+  pgadmin:
+    container_name: pg_admin
+    image: dpage/pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=root
+    ports:
+      - "1000:80"
+    networks:
+      - airflow_default
+    depends_on:
+      - pgdatabase
+networks:
+  airflow_default:
+    external: true
