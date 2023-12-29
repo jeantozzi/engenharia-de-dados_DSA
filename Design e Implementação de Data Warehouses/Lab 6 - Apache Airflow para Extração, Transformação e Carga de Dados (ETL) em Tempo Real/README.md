@@ -87,7 +87,7 @@ Temos o output gráfico abaixo ilustrando a ordem e o tempo de execução de cad
 
 ![airflow_2](./images/airflow_2.png)
 
-Como resultado, temos as tabelas populadas de acordo com arquivos da pasta `dags/data`.
+Como resultado, temos as tabelas populadas de acordo com arquivos da pasta `dags/dados`.
 
 ### dim_cliente
 
