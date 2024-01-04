@@ -7,7 +7,20 @@
     - [Modelagem dimensional](#modelagem-dimensional)
     - [Modelagem física](#modelagem-física)
 - [Arquitetura do ETL](#arquitetura-do-etl)
-- [Criação dos containers](#criação-dos-containers)
+- [Criação dos containers de banco de dados](#criação-dos-containers-de-banco-de-dados)
+- [Padrão de nomenclatura](#padrão-de-nomenclatura)
+- [Criação e carga das tabelas no container de Fonte de Dados](#criação-e-carga-das-tabelas-no-container-de-fonte-de-dados)
+    - [Tabela de categorias](#tabela-de-categorias)
+    - [Tabela de subcategorias](#tabela-de-subcategorias)
+    - [Tabela de produtos](#tabela-de-produtos)
+    - [Tabela de cidades](#tabela-de-cidades)
+    - [Tabela de localidades](#tabela-de-localidades)
+    - [Tabela de tipos de cliente](#tabela-de-tipos-de-cliente)
+    - [Tabela de clientes](#tabela-de-clientes)
+    - [Tabela de vendas](#tabela-de-vendas)
+    - [Resultado Fonte de Dados](#resultado-fonte-de-dados)
+- [Instalação do Airbyte para o processo de Extração](#instalação-do-airbyte-para-o-processo-de-extração)
+- [Configuração do processo de Extração no Airbyte](#configuração-do-processo-de-extração-no-airbyte)
 
 ## Apresentação geral do projeto
 
@@ -162,20 +175,292 @@ CREATE TABLE `FATO_VENDA` (
 - Transformação e Carga de Dados via SQL:
     - Na Staging Area os dados serão limpos, transformados e processados com linguagem SQL. A linguagem SQL também será usada para carregar os dados no DW (o que pode ser feito com uma query).
 
-## Criação dos containers
+## Criação dos containers de banco de dados
 
 Executaremos os comandos a seguir para a criação dos containers:
 
 - Fonte de Dados
 ```bash
-docker run --name dbdsafonte -p 5433:5432 -e POSTGRES_USER=dbadmin -e POSTGRES_PASSWORD=dbadmin123 -e POSTGRES_DB=postgresDB -d postgres
+$ docker run --name dbdsafonte -p 5433:5432 -e POSTGRES_USER=dbadmin -e POSTGRES_PASSWORD=dbadmin123 -e POSTGRES_DB=postgresDB -d postgres
 ```
 
 - Staging Area/DW
 ```bash
-docker run --name dbdsadestino -p 5434:5432 -e POSTGRES_USER=dbadmin -e POSTGRES_PASSWORD=dbadmin123 -e POSTGRES_DB=postgresDB -d postgres
+$ docker run --name dbdsadestino -p 5434:5432 -e POSTGRES_USER=dbadmin -e POSTGRES_PASSWORD=dbadmin123 -e POSTGRES_DB=postgresDB -d postgres
 ```
 
 O resultado é a criação de dois containers de uma única imagem Postgres:
 
 ![Criando os containers](./images/containers.png)
+
+## Criação dos schemas
+
+- Fonte de Dados
+
+![Schema 1](./images/schema_1.png)
+
+- Staging Area/DW
+
+![Schema 2 e 3](./images/schema_2-3.png)
+
+## Padrão de nomenclatura
+
+As tabelas terão um prefixo na nomenclatura dependendo do schema em questão, conforme a divisão abaixo.
+
+- Fonte de Dados
+    - Prefixo `ft_` para as tabelas
+
+- Staging Area
+    - Prefixo `st_` para as tabelas
+
+- DW
+    - Prefixo `dim_` para as tabelas de dimensão
+    - Prefixo `ft_` para a tabela fato
+
+## Criação e carga das tabelas no container de Fonte de Dados
+
+Executaremos os comandos abaixo para criar e popular as tabelas no banco de Fonte de Dados.
+É possível encontrá-los consolidados [neste arquivo .sql](./sql/fonte_dados.sql)
+
+### Tabela de categorias
+
+```sql
+-- Criando a tabela
+CREATE TABLE schema1.ft_categorias (
+    id_categoria SERIAL PRIMARY KEY,
+    nome_categoria VARCHAR(255) NOT NULL
+);
+
+-- Inserindo dados
+INSERT INTO schema1.ft_categorias (nome_categoria) VALUES ('Computadores');
+INSERT INTO schema1.ft_categorias (nome_categoria) VALUES ('Smartphones');
+INSERT INTO schema1.ft_categorias (nome_categoria) VALUES ('Impressoras');
+```
+
+### Tabela de subcategorias
+
+```sql
+-- Criando a tabela
+CREATE TABLE schema1.ft_subcategorias (
+    id_subcategoria SERIAL PRIMARY KEY,
+    nome_subcategoria VARCHAR(255) NOT NULL,
+    id_categoria INTEGER REFERENCES schema1.ft_categorias(id_categoria)
+);
+
+-- Inserindo dados
+INSERT INTO schema1.ft_subcategorias (nome_subcategoria, id_categoria) VALUES ('Notebook', 1);
+INSERT INTO schema1.ft_subcategorias (nome_subcategoria, id_categoria) VALUES ('Desktop', 1);
+INSERT INTO schema1.ft_subcategorias (nome_subcategoria, id_categoria) VALUES ('iPhone', 2);
+INSERT INTO schema1.ft_subcategorias (nome_subcategoria, id_categoria) VALUES ('Samsung Galaxy', 2);
+INSERT INTO schema1.ft_subcategorias (nome_subcategoria, id_categoria) VALUES ('Laser', 3);
+INSERT INTO schema1.ft_subcategorias (nome_subcategoria, id_categoria) VALUES ('Matricial', 3);
+```
+
+### Tabela de produtos
+
+```sql
+-- Criando a tabela
+CREATE TABLE schema1.ft_produtos (
+    id_produto SERIAL PRIMARY KEY,
+    nome_produto VARCHAR(255) NOT NULL,
+    preco_produto NUMERIC(10, 2) NOT NULL,
+    id_subcategoria INTEGER REFERENCES schema1.ft_subcategorias(id_subcategoria)
+);
+
+-- Inserindo dados
+INSERT INTO schema1.ft_produtos (nome_produto, preco_produto, id_subcategoria) VALUES ('Apple MacBook Pro M2', 6589.99, 1);
+INSERT INTO schema1.ft_produtos (nome_produto, preco_produto, id_subcategoria) VALUES ('Desktop Dell 16 GB', 1500.50, 1);
+INSERT INTO schema1.ft_produtos (nome_produto, preco_produto, id_subcategoria) VALUES ('iPhone 14', 4140.00, 2);
+INSERT INTO schema1.ft_produtos (nome_produto, preco_produto, id_subcategoria) VALUES ('Samsung Galaxy Z', 3500.99, 2);
+INSERT INTO schema1.ft_produtos (nome_produto, preco_produto, id_subcategoria) VALUES ('HP 126A Original LaserJet Imaging Drum', 300.90, 3);
+INSERT INTO schema1.ft_produtos (nome_produto, preco_produto, id_subcategoria) VALUES ('Epson LX-300 II USB', 350.99, 3);
+```
+
+### Tabela de cidades
+
+```sql
+-- Criando a tabela
+CREATE TABLE schema1.ft_cidades (
+    id_cidade SERIAL PRIMARY KEY,
+    nome_cidade VARCHAR(255) NOT NULL
+);
+
+-- Inserindo dados
+INSERT INTO schema1.ft_cidades (nome_cidade) VALUES
+    ('Natal'),
+    ('Rio de Janeiro'),
+    ('Belo Horizonte'),
+    ('Salvador'),
+    ('Blumenau'),
+    ('Curitiba'),
+    ('Fortaleza'),
+    ('Recife'),
+    ('Porto Alegre'),
+    ('Manaus');
+```
+
+### Tabela de localidades
+
+```sql
+-- Criando a tabela
+CREATE TABLE schema1.ft_localidades (
+    id_localidade SERIAL PRIMARY KEY,
+    pais VARCHAR(255) NOT NULL,
+    regiao VARCHAR(255) NOT NULL,
+    id_cidade INTEGER REFERENCES schema1.ft_cidades(id_cidade)
+);
+
+-- Inserindo dados
+INSERT INTO schema1.ft_localidades (pais, regiao, id_cidade) VALUES
+    ('Brasil', 'Nordeste', 1),
+    ('Brasil', 'Sudeste', 2),
+    ('Brasil', 'Sudeste', 3),
+    ('Brasil', 'Nordeste', 4),
+    ('Brasil', 'Sul', 5),
+    ('Brasil', 'Sul', 6),
+    ('Brasil', 'Nordeste', 7),
+    ('Brasil', 'Nordeste', 8),
+    ('Brasil', 'Sul', 9),
+    ('Brasil', 'Norte', 10);
+```
+
+### Tabela de tipos de cliente
+
+```sql
+-- Criando a tabela
+CREATE TABLE schema1.ft_tipo_cliente (
+    id_tipo SERIAL PRIMARY KEY,
+    nome_tipo VARCHAR(255) NOT NULL
+);
+
+-- Inserindo dados
+INSERT INTO schema1.ft_tipo_cliente (nome_tipo) VALUES ('Corporativo');
+INSERT INTO schema1.ft_tipo_cliente (nome_tipo) VALUES ('Consumidor');
+INSERT INTO schema1.ft_tipo_cliente (nome_tipo) VALUES ('Desativado');
+```
+
+### Tabela de clientes
+
+```sql
+-- Criando a tabela
+CREATE TABLE schema1.ft_clientes (
+    id_cliente SERIAL PRIMARY KEY,
+    nome_cliente VARCHAR(255) NULL,
+    email_cliente VARCHAR(255) NULL,
+    id_cidade INTEGER REFERENCES schema1.ft_cidades(id_cidade),
+    id_tipo INTEGER REFERENCES schema1.ft_tipo_cliente(id_tipo)
+);
+
+-- Inserindo dados
+INSERT INTO schema1.ft_clientes (nome_cliente, email_cliente, id_cidade, id_tipo) VALUES ('João Silva', 'joao.silva@exemplo.com', 1, 1);
+INSERT INTO schema1.ft_clientes (nome_cliente, email_cliente, id_cidade, id_tipo) VALUES ('Maria Santos', 'maria.santos@exemplo.com', 2, 2);
+INSERT INTO schema1.ft_clientes (nome_cliente, email_cliente, id_cidade, id_tipo) VALUES ('Pedro Lima', 'pedro.lima@exemplo.com', 3, 2);
+INSERT INTO schema1.ft_clientes (nome_cliente, email_cliente, id_cidade, id_tipo) VALUES ('Ana Rodrigues', 'ana.rodrigues@exemplo.com', 4, 2);
+INSERT INTO schema1.ft_clientes (nome_cliente, email_cliente, id_cidade, id_tipo) VALUES ('José Oliveira', 'jose.oliveira@exemplo.com', 1, 2);
+INSERT INTO schema1.ft_clientes (nome_cliente, email_cliente, id_cidade, id_tipo) VALUES ('Carla Santos', 'carla.santos@exemplo.com', 4, 1);
+INSERT INTO schema1.ft_clientes (nome_cliente, email_cliente, id_cidade, id_tipo) VALUES ('Marcos Souza', 'marcos.souza@exemplo.com', 5, 2);
+INSERT INTO schema1.ft_clientes (nome_cliente, email_cliente, id_cidade, id_tipo) VALUES ('Julia Silva', 'julia.silva@exemplo.com', 1, 1);
+INSERT INTO schema1.ft_clientes (nome_cliente, email_cliente, id_cidade, id_tipo) VALUES ('Lucas Martins', 'lucas.martins@exemplo.com', 3, 3);
+INSERT INTO schema1.ft_clientes (nome_cliente, email_cliente, id_cidade, id_tipo) VALUES ('Fernanda Lima', 'fernanda.lima@exemplo.com', 4, 2);
+```
+
+### Tabela de vendas
+
+```sql
+-- Criando a tabela
+CREATE TABLE schema1.ft_vendas (
+  id_transacao VARCHAR(50) NOT NULL,
+  id_produto INT NOT NULL,
+  id_cliente INT NOT NULL,
+  id_localizacao INT NOT NULL,
+  data_transacao DATE NULL,
+  quantidade INT NOT NULL,
+  preco_venda DECIMAL(10,2) NOT NULL,
+  custo_produto DECIMAL(10,2) NOT NULL
+);
+
+-- Gerando dados aleatórios
+WITH dados_aleatorios AS (
+  SELECT 
+    FLOOR(RANDOM() * 1000000)::TEXT AS id_transacao,
+    FLOOR(RANDOM() * 6 + 1) AS id_produto,
+    FLOOR(RANDOM() * 10 + 1) AS id_cliente,
+    FLOOR(RANDOM() * 4 + 1) AS id_localizacao,
+    '2022-01-01'::DATE + FLOOR(RANDOM() * 365)::INTEGER AS data_transacao,
+    floor(RANDOM() * 10 + 1) AS quantidade,
+    round(CAST(RANDOM() * 100 + 1 AS NUMERIC), 2) AS preco_venda,
+    round(CAST(RANDOM() * 50 + 1 AS NUMERIC), 2) AS custo_produto
+  FROM GENERATE_SERIES(1, 1000)
+)
+
+-- Inserindo dados
+INSERT INTO schema1.ft_vendas (id_transacao, id_produto, id_cliente, id_localizacao, data_transacao, quantidade, preco_venda, custo_produto)
+SELECT 
+  'TRAN-' || id_transacao AS id_transacao,
+  id_produto,
+  id_cliente,
+  id_localizacao,
+  data_transacao,
+  quantidade,
+  ROUND(CAST(preco_venda AS NUMERIC), 2),
+  ROUND(CAST(custo_produto AS NUMERIC), 2)
+FROM dados_aleatorios;
+```
+
+### Resultado Fonte de Dados
+
+Com todas as tabelas criadas e populadas, teremos o seguinte resultado na hierarquia:
+
+![Tabelas Fonte de Dados](./images/tabelas_ft.png)
+
+Abaixo, como ilustração, temos alguns registros que foram inseridos na tabela `ft_vendas`:
+
+![Dados Tabela Vendas](./images/ft_vendas.png)
+
+## Instalação do Airbyte para o processo de Extração
+
+Instalaremos o Airbyte conforme instruções descritas no site oficial (https://docs.airbyte.com/deploying-airbyte/local-deployment).
+
+Precisamos clonar o repositório do Airbyte para Docker e depois executá-lo:
+
+```bash
+# Clonando os arquivos do repositório do Airbyte no GitHub
+$ git clone --depth=1 https://github.com/airbytehq/airbyte.git
+
+# Entrando na pasta do repositório clonado
+$ cd airbyte
+
+# Executando o Airbyte
+$ ./run-ab-platform.sh
+```
+
+Após a execução dos comandos acima, teremos o container do Airbyte rodando, pronto para ser acessado com as credenciais pré-definidas.
+
+![Airbyte 1](./images/airbyte_1.png)
+
+- **Caminho:** http://localhost:8000
+- **Login:** airbyte
+- **Senha:** password
+
+![Airbyte 2](./images/airbyte_2.png)
+
+## Configuração do processo de Extração no Airbyte
+
+Agora vamos criar as duas conexões, usando as credenciais utilizadas no item [Criação dos containers de banco de dados](#criação-dos-containers-de-banco-de-dados):
+
+- **fonte:** um `source` que conecta no schema `schema1` do banco `postgresDB` localizado no container `dbdsafonte`;
+    - ![Source fonte](./images/airbyte_source_fonte.png)
+- **staging:** um `destination` que conecta no schema `schema2` do banco `postgresDB` localizado no container `dbdsadestino`;
+    - ![Destination staging](./images/airbyte_destination_staging.png)
+
+Para finalizar, criaremos um fluxo (connection) que se utilizará das conexões anteriores para realizar a etapa de Extração para a Staging Area.
+
+![Connection ETL Fase 1](./images/airbyte_connection_etl-fase1.png)
+
+Como podemos notar, a conexão irá adicionar o prefixo `st_` no destino.
+
+Abaixo temos o resultado da execução bem-sucedida do fluxo criado:
+
+![Tabelas staging](./images/tabelas_staging.png)
+
+
