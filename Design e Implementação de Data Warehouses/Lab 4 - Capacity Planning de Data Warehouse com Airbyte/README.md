@@ -15,9 +15,9 @@ Vamos estimar o tamanho de um banco de dados (calculando aritmeticamente) e comp
 ## Tamanho real via Airbyte
 ### Instalando o Airbyte
 ```bash
-git clone https://github.com/airbytehq/airbyte.git
-cd airbyte
-docker compose up
+$ git clone https://github.com/airbytehq/airbyte.git
+$ cd airbyte
+$ docker compose up
 ```
 
 ### Entrando no Airbyte
@@ -27,7 +27,7 @@ Pelo enderenço `localhost:8000`, utilize login `airbyte` e senha `password` par
 Execute o comando abaixo para criar o container com o Postgres:
 
 ```bash
-docker run --name dbdsa-lab4 -p 5432:5432 -e POSTGRES_USER=dsa -e POSTGRES_PASSWORD=dsa123 -e POSTGRES_DB=dsadb -d postgres
+$ docker run --name dbdsa-lab4 -p 5432:5432 -e POSTGRES_USER=dsa -e POSTGRES_PASSWORD=dsa123 -e POSTGRES_DB=dsadb -d postgres
 ```
 
 ### Verificando tamanho do banco antes da carga ETL
@@ -63,11 +63,11 @@ Preencha conforme abaixo:
 Antes de preencher, é necessário fazer com que os arquivos `.csv` sejam acessíveis para o Airbyte. Para isso, vamos executar os seguintes comandos:
 
 ```bash
-sudo cp DIM_FORNECEDOR.csv /tmp/airbyte_local
-sudo cp DIM_PRODUTO.csv /tmp/airbyte_local
-sudo cp FATO_VENDAS.csv /tmp/airbyte_local
+$ sudo cp DIM_FORNECEDOR.csv /tmp/airbyte_local
+$ sudo cp DIM_PRODUTO.csv /tmp/airbyte_local
+$ sudo cp FATO_VENDAS.csv /tmp/airbyte_local
 
-docker cp /tmp/airbyte_local airbyte-server:/tmp/airbyte_local
+$ docker cp /tmp/airbyte_local airbyte-server:/tmp/airbyte_local
 ```
 
 Preencha conforme abaixo, alternando com base em cada um dos três arquivos `.csv`:

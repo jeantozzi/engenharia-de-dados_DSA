@@ -21,8 +21,8 @@ A visão geral do que faremos neste lab consta na imagem abaixo:
 Para a criação do Ambiente Virtual, no qual isolaremos as instalações de pacotes e dependências, basta executar os comandos abaixo:
 
 ```bash
-conda create --name dsa_dw_lab-5
-conda activate dsa_dw_lab-5
+$ conda create --name dsa_dw_lab-5
+$ conda activate dsa_dw_lab-5
 ```
 
 ## Criando os containers
@@ -63,8 +63,8 @@ Com o acesso estabelecido, siga os passos ilustrados abaixo para criação do Sc
 Certifique-se de que seu terminal está na pasta `/airflow` e execute os comandos abaixo:
 
 ```bash
-docker-compose up airflow-init
-docker-compose up -d
+$ docker-compose up airflow-init
+$ docker-compose up -d
 ```
 
 Primeiramente, acesse a interface através do link `localhost:8080`.

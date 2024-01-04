@@ -3,14 +3,14 @@
 Para criarmos o container com o Sistema de Gerenciamento de Banco de Dados (SGBD) PostgreSQL, será necessário executar o comando abaixo:
 
 ```bash
-docker run --name dbdsa -p 5432:5432 --network=bridge -e POSTGRES_USER=dbadmin -e POSTGRES_PASSWORD=dbadmin123 -e POSTGRES_DB=postgresDB -d postgres
+$ docker run --name dbdsa -p 5432:5432 --network=bridge -e POSTGRES_USER=dbadmin -e POSTGRES_PASSWORD=dbadmin123 -e POSTGRES_DB=postgresDB -d postgres
 ```
 
 ## Criação do container PGAdmin
 Para acessarmos o SGBD através do PGAdmin, será necessário executar o comando abaixo:
 
 ```bash
-docker run --name pgadmin -p 8080:8080 --network=bridge -e PGADMIN_DEFAULT_EMAIL=root@root.com PGADMIN_DEFAULT_PASSWORD=root -d dpage/pgadmin4
+$ docker run --name pgadmin -p 8080:8080 --network=bridge -e PGADMIN_DEFAULT_EMAIL=root@root.com PGADMIN_DEFAULT_PASSWORD=root -d dpage/pgadmin4
 ```
 
 ## Modelo Relacional Final
