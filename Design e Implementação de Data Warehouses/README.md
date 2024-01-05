@@ -4,7 +4,7 @@ Link para mais informações: https://www.datascienceacademy.com.br/course/desig
 
 # Sumário
 
-- [Lab 1 - Modelagem Lógica de Dados](./Projeto%201%20-%20Local%20Datawarehouse%20com%20Docker/) 
+- [Lab 1 - Modelagem Lógica de Dados](./Lab%201%20-%20Modelagem%20Lógica%20de%20Dados/) 
 - [Lab 2 - Modelagem Dimensional para Rede de Varejo](./Lab%202%20-%20Modelagem%20Dimensional%20para%20Rede%20de%20Varejo/)
 - [Lab 3 - Linguagem SQL para Engenheiros de Dados](./Lab%203%20-%20Linguagem%20SQL%20para%20Engenheiros%20de%20Dados/)
 - [Lab 4 - Capacity Planning de Data Warehouse com Airbyte](./Lab%204%20-%20Capacity%20Planning%20de%20Data%20Warehouse%20com%20Airbyte/)
