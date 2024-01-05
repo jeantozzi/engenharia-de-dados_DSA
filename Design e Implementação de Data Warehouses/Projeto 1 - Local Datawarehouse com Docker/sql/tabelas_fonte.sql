@@ -149,6 +149,6 @@ SELECT
   id_localizacao,
   data_transacao,
   quantidade,
-  ROUND(CAST(preco_venda AS numeric), 2),
-  ROUND(CAST(custo_produto AS numeric), 2)
+  ROUND(CAST(preco_venda AS NUMERIC), 2),
+  ROUND(CAST(custo_produto AS NUMERIC), 2)
 FROM dados_aleatorios;

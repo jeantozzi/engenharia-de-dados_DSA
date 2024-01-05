@@ -18,9 +18,16 @@
     - [Tabela de tipos de cliente](#tabela-de-tipos-de-cliente)
     - [Tabela de clientes](#tabela-de-clientes)
     - [Tabela de vendas](#tabela-de-vendas)
-    - [Resultado Fonte de Dados](#resultado-fonte-de-dados)
+    - [Resultado tabelas da Fonte de Dados](#resultado-tabelas-da-fonte-de-dados)
 - [Instalação do Airbyte para o processo de Extração](#instalação-do-airbyte-para-o-processo-de-extração)
 - [Configuração do processo de Extração no Airbyte](#configuração-do-processo-de-extração-no-airbyte)
+- [Criação das tabelas do DW no container de Destino](#criação-das-tabelas-do-dw-no-container-de-destino)
+    - [Tabela dimensão cliente](#tabela-dimensão-cliente)
+    - [Tabela dimensão localidade](#tabela-dimensão-localidade)
+    - [Tabela dimensão produto](#tabela-dimensão-produto)
+    - [Tabela dimensão tempo](#tabela-dimensão-tempo)
+    - [Tabela fato de vendas](#tabela-fato-de-vendas)
+    - [Resultado tabelas do Data Warehouse](#resultado-tabelas-do-data-warehouse)
 
 ## Apresentação geral do projeto
 
@@ -220,7 +227,7 @@ As tabelas terão um prefixo na nomenclatura dependendo do schema em questão, c
 ## Criação e carga das tabelas no container de Fonte de Dados
 
 Executaremos os comandos abaixo para criar e popular as tabelas no banco de Fonte de Dados.
-É possível encontrá-los consolidados [neste arquivo .sql](./sql/fonte_dados.sql)
+É possível encontrá-los consolidados [neste arquivo .sql](./sql/tabelas_fonte.sql)
 
 ### Tabela de categorias
 
@@ -407,7 +414,7 @@ SELECT
 FROM dados_aleatorios;
 ```
 
-### Resultado Fonte de Dados
+### Resultado tabelas da Fonte de Dados
 
 Com todas as tabelas criadas e populadas, teremos o seguinte resultado na hierarquia:
 
@@ -463,4 +470,96 @@ Abaixo temos o resultado da execução bem-sucedida do fluxo criado:
 
 ![Tabelas staging](./images/tabelas_staging.png)
 
+## Criação das tabelas do DW no container de Destino
 
+As tabelas serão criadas utilizando um recurso chamado `Surogate Key (SK)`, que é identificado a partir do prefixo `sk_` nas tabelas.
+
+A SK serve para desatrelarmos informações de negócio (como por exemplo os campos com prefixo `id_`) da construção dos relacionamentos no banco de dados.
+
+Dentre vários motivos, temos alguns principais:
+
+- **Eliminação  de  problemas  de  desempenho:**  as  chaves  naturais  podem  ser  grandes  e complexas,  o  que  pode  afetar  negativamente  o  desempenho  do  banco  de  dados.  As  chaves surrogate,  por  outro  lado,  são  geralmente  simples  e  pequenas,  o  que  torna  a  pesquisa  e  a indexação mais rápidas e eficientes.
+
+- **Facilidade de manutenção:** as chaves naturais podem mudar com o tempo, o que pode afetar a integridade dos dados. As chaves surrogate, por outro lado, são atribuídas pelo sistema e permanecem estáveis ao longo do tempo, o que facilita a manutenção do DW.
+
+- **Flexibilidade:** as  chaves  surrogate  são  independentes  do  contexto  dos  dados,  o  que significa que podem ser usadas em diferentes tabelas e em diferentes modelos de dados, sem afetar a integridade dos dados. Isso permite que o DW seja mais flexível e escalável.
+
+- **Integraçãode dados:** as chaves surrogate permitem a integração de dados de diferentes fontes,  mesmo  que  as  chaves  naturais  sejam  diferentes.  Isso  significa  que  o  DW  pode  ser alimentado  com  dados  de  diferentes  sistemas  e  fontes,  tornando-o  mais  completo  e  útil  para análises.
+
+- **Segurança:**  as  chaves  surrogate  podem  ser  criptografadas,  tornando-as  mais  seguras  e protegidas contra ameaças externas.
+
+Executaremos os comandos abaixo para criar e popular as tabelas no Data Warehouse.
+É possível encontrá-los consolidados [neste arquivo .sql](./sql/tabelas_dw.sql)
+
+### Tabela dimensão cliente
+
+```sql
+CREATE TABLE schema3.dim_cliente (
+  sk_cliente SERIAL PRIMARY KEY,
+  id_cliente INT NOT NULL,
+  nome VARCHAR(50) NOT NULL,
+  tipo VARCHAR(50) NOT NULL
+);
+```
+
+### Tabela dimensão produto
+
+```sql
+CREATE TABLE schema3.dim_produto (
+  sk_produto SERIAL PRIMARY KEY,
+  id_produto INT NOT NULL,
+  nome_produto VARCHAR(50) NOT NULL,
+  categoria VARCHAR(50) NOT NULL,
+  subcategoria VARCHAR(50) NOT NULL
+);
+```
+
+### Tabela dimensão localidade
+
+```sql
+CREATE TABLE schema3.dim_localidade (
+  sk_localidade SERIAL PRIMARY KEY,
+  id_localidade INT NOT NULL,
+  pais VARCHAR(50) NOT NULL,
+  regiao VARCHAR(50) NOT NULL,
+  estado VARCHAR(50) NOT NULL,
+  cidade VARCHAR(50) NOT NULL
+);
+```
+
+### Tabela dimensão tempo
+
+```sql
+CREATE TABLE schema3.dim_tempo (
+  sk_tempo SERIAL PRIMARY KEY,
+  data_completa date,
+  ano INT NOT NULL,
+  mes INT NOT NULL,
+  dia INT NOT NULL
+);
+```
+
+### Tabela fato de vendas
+
+```sql
+CREATE TABLE schema3.fato_vendas (
+  sk_produto INT NOT NULL,
+  sk_cliente INT NOT NULL,
+  sk_localidade INT NOT NULL,
+  sk_tempo INT NOT NULL,
+  quantidade INT NOT NULL,
+  preco_venda DECIMAL(10, 2) NOT NULL,
+  custo_produto DECIMAL(10, 2) NOT NULL,
+  receita_vendas DECIMAL(10, 2) NOT NULL,
+  PRIMARY KEY (sk_produto, sk_cliente, sk_localidade, sk_tempo),
+  FOREIGN KEY (sk_produto) REFERENCES schema3.dim_produto (sk_produto),
+  FOREIGN KEY (sk_cliente) REFERENCES schema3.dim_cliente (sk_cliente),
+  FOREIGN KEY (sk_localidade) REFERENCES schema3.dim_localidade (sk_localidade),
+  FOREIGN KEY (sk_tempo) REFERENCES schema3.dim_tempo (sk_tempo)
+);
+```
+### Resultado tabelas do Data Warehouse
+
+Após a execução dos comandos, teremos as tabelas constando na hierarquia, como abaixo:
+
+![Tabelas DW](./images/tabelas_dw.png)
