@@ -1,6 +1,8 @@
 # Design e Implementação de Data Warehouses
 
-Link para mais informações: https://www.datascienceacademy.com.br/course/design-e-implementacao-de-data-warehouses
+Link para mais informações: <br> https://www.datascienceacademy.com.br/course/design-e-implementacao-de-data-warehouses
+
+O link poderá ser inutilizado caso outras formações sejam lançadas pela DSA.
 
 # Sumário
 
