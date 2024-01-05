@@ -1,4 +1,4 @@
--- Tabela Dimensão Cliente
+-- Criando a dimensão cliente
 CREATE TABLE schema3.dim_cliente (
   sk_cliente SERIAL PRIMARY KEY,
   id_cliente INT NOT NULL,
@@ -6,7 +6,7 @@ CREATE TABLE schema3.dim_cliente (
   tipo VARCHAR(50) NOT NULL
 );
 
--- Tabela Dimensão Produto
+-- Criando a dimensão produto
 CREATE TABLE schema3.dim_produto (
   sk_produto SERIAL PRIMARY KEY,
   id_produto INT NOT NULL,
@@ -15,7 +15,7 @@ CREATE TABLE schema3.dim_produto (
   subcategoria VARCHAR(50) NOT NULL
 );
 
--- Tabela Dimensão Localidade
+-- Criando a dimensão localidade
 CREATE TABLE schema3.dim_localidade (
   sk_localidade SERIAL PRIMARY KEY,
   id_localidade INT NOT NULL,
@@ -25,7 +25,7 @@ CREATE TABLE schema3.dim_localidade (
   cidade VARCHAR(50) NOT NULL
 );
 
--- Tabela Dimensão Tempo
+-- Criando a dimensão tempo
 CREATE TABLE schema3.dim_tempo (
   sk_tempo SERIAL PRIMARY KEY,
   data_completa date,
@@ -34,7 +34,7 @@ CREATE TABLE schema3.dim_tempo (
   dia INT NOT NULL
 );
 
--- Tabela Fato de Vendas
+-- Criando a tabela fato de vendas
 CREATE TABLE schema3.fato_vendas (
   sk_produto INT NOT NULL,
   sk_cliente INT NOT NULL,

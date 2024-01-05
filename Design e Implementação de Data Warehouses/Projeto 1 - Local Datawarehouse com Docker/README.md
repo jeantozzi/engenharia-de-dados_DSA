@@ -21,13 +21,20 @@
     - [Resultado tabelas da Fonte de Dados](#resultado-tabelas-da-fonte-de-dados)
 - [Instalação do Airbyte para o processo de Extração](#instalação-do-airbyte-para-o-processo-de-extração)
 - [Configuração do processo de Extração no Airbyte](#configuração-do-processo-de-extração-no-airbyte)
-- [Criação das tabelas do DW no container de Destino](#criação-das-tabelas-do-dw-no-container-de-destino)
-    - [Tabela dimensão cliente](#tabela-dimensão-cliente)
-    - [Tabela dimensão localidade](#tabela-dimensão-localidade)
-    - [Tabela dimensão produto](#tabela-dimensão-produto)
-    - [Tabela dimensão tempo](#tabela-dimensão-tempo)
-    - [Tabela fato de vendas](#tabela-fato-de-vendas)
-    - [Resultado tabelas do Data Warehouse](#resultado-tabelas-do-data-warehouse)
+- [Criação das tabelas do Data Warehouse](#criação-das-tabelas-do-data-warehouse)
+    - [Criação tabela dimensão cliente](#criação-tabela-dimensão-cliente)
+    - [Criação tabela dimensão localidade](#criação-tabela-dimensão-localidade)
+    - [Criação tabela dimensão produto](#criação-tabela-dimensão-produto)
+    - [Criação tabela dimensão tempo](#criação-tabela-dimensão-tempo)
+    - [Criação tabela fato de vendas](#criação-tabela-fato-de-vendas)
+    - [Resultado criação tabelas do Data Warehouse](#resultado-criação-tabelas-do-data-warehouse)
+- [Carga das tabelas do Data Warehouse](#carga-das-tabelas-do-data-warehouse)
+    - [Carga tabela dimensão cliente](#carga-tabela-dimensão-cliente)
+    - [Carga tabela dimensão localidade](#carga-tabela-dimensão-localidade)
+    - [Carga tabela dimensão produto](#carga-tabela-dimensão-produto)
+    - [Carga tabela dimensão tempo](#carga-tabela-dimensão-tempo)
+    - [Carga tabela fato de vendas](#carga-tabela-fato-de-vendas)
+    - [Resultado carga tabelas do Data Warehouse](#resultado-carga-tabelas-do-data-warehouse)
 
 ## Apresentação geral do projeto
 
@@ -470,7 +477,7 @@ Abaixo temos o resultado da execução bem-sucedida do fluxo criado:
 
 ![Tabelas staging](./images/tabelas_staging.png)
 
-## Criação das tabelas do DW no container de Destino
+## Criação das tabelas do Data Warehouse
 
 As tabelas serão criadas utilizando um recurso chamado `Surogate Key (SK)`, que é identificado a partir do prefixo `sk_` nas tabelas.
 
@@ -488,10 +495,10 @@ Dentre vários motivos, temos alguns principais:
 
 - **Segurança:**  as  chaves  surrogate  podem  ser  criptografadas,  tornando-as  mais  seguras  e protegidas contra ameaças externas.
 
-Executaremos os comandos abaixo para criar e popular as tabelas no Data Warehouse.
+Executaremos os comandos abaixo para criar as tabelas no Data Warehouse.
 É possível encontrá-los consolidados [neste arquivo .sql](./sql/tabelas_dw.sql)
 
-### Tabela dimensão cliente
+### Criação tabela dimensão cliente
 
 ```sql
 CREATE TABLE schema3.dim_cliente (
@@ -502,7 +509,7 @@ CREATE TABLE schema3.dim_cliente (
 );
 ```
 
-### Tabela dimensão produto
+### Criação tabela dimensão produto
 
 ```sql
 CREATE TABLE schema3.dim_produto (
@@ -514,7 +521,7 @@ CREATE TABLE schema3.dim_produto (
 );
 ```
 
-### Tabela dimensão localidade
+### Criação tabela dimensão localidade
 
 ```sql
 CREATE TABLE schema3.dim_localidade (
@@ -527,7 +534,7 @@ CREATE TABLE schema3.dim_localidade (
 );
 ```
 
-### Tabela dimensão tempo
+### Criação tabela dimensão tempo
 
 ```sql
 CREATE TABLE schema3.dim_tempo (
@@ -539,7 +546,7 @@ CREATE TABLE schema3.dim_tempo (
 );
 ```
 
-### Tabela fato de vendas
+### Criação tabela fato de vendas
 
 ```sql
 CREATE TABLE schema3.fato_vendas (
@@ -558,8 +565,128 @@ CREATE TABLE schema3.fato_vendas (
   FOREIGN KEY (sk_tempo) REFERENCES schema3.dim_tempo (sk_tempo)
 );
 ```
-### Resultado tabelas do Data Warehouse
+### Resultado criação tabelas do Data Warehouse
 
 Após a execução dos comandos, teremos as tabelas constando na hierarquia, como abaixo:
 
 ![Tabelas DW](./images/tabelas_dw.png)
+
+## Carga das tabelas do Data Warehouse
+
+Executaremos os comandos abaixo para popular as tabelas no Data Warehouse.
+É possível encontrá-los consolidados [neste arquivo .sql](./sql/carga_dw.sql)
+
+### Carga tabela dimensão cliente
+
+```sql
+INSERT INTO schema3.dim_cliente (id_cliente, nome, tipo)
+SELECT
+	cli.id_cliente, 
+    cli.nome_cliente, 
+    tip.nome_tipo
+FROM
+	schema2.st_ft_clientes AS cli
+	INNER JOIN schema2.st_ft_tipo_cliente AS tip USING(id_tipo);
+```
+
+### Carga tabela dimensão localidade
+
+```sql
+INSERT INTO schema3.dim_localidade (id_localidade, pais, regiao, estado, cidade)
+SELECT
+	loc.id_localidade, 
+	loc.pais, 
+	loc.regiao, 
+	CASE
+		WHEN cid.nome_cidade = 'Natal' THEN 'Rio Grande do Norte'
+		WHEN cid.nome_cidade = 'Rio de Janeiro' THEN 'Rio de Janeiro'
+		WHEN cid.nome_cidade = 'Belo Horizonte' THEN 'Minas Gerais'
+		WHEN cid.nome_cidade = 'Salvador' THEN 'Bahia'
+		WHEN cid.nome_cidade = 'Blumenau' THEN 'Santa Catarina'
+		WHEN cid.nome_cidade = 'Curitiba' THEN 'Paraná'
+		WHEN cid.nome_cidade = 'Fortaleza' THEN 'Ceará'
+		WHEN cid.nome_cidade = 'Recife' THEN 'Pernambuco'
+		WHEN cid.nome_cidade = 'Porto Alegre' THEN 'Rio Grande do Sul'
+		WHEN cid.nome_cidade = 'Manaus' THEN 'Amazonas'
+	END estado, 
+	cid.nome_cidade
+FROM
+	schema2.st_ft_localidades AS loc
+	INNER JOIN schema2.st_ft_cidades AS cid USING(id_cidade);
+```
+
+### Carga tabela dimensão produto
+
+```sql
+INSERT INTO schema3.dim_produto (id_produto, nome_produto, categoria, subcategoria)
+SELECT
+	pro.id_produto, 
+    pro.nome_produto, 
+    cat.nome_categoria, 
+    sub.nome_subcategoria
+FROM
+	schema2.st_ft_produtos AS pro
+	INNER JOIN schema2.st_ft_subcategorias AS sub USING(id_subcategoria) 
+	INNER JOIN schema2.st_ft_categorias AS cat USING(id_categoria);
+
+```
+
+### Carga tabela dimensão tempo
+
+```sql
+INSERT INTO schema3.dim_tempo (ano, mes, dia, data_completa)
+SELECT
+	EXTRACT(YEAR FROM d)::INT, 
+	EXTRACT(MONTH FROM d)::INT, 
+    EXTRACT(DAY FROM d)::INT,
+	d::DATE
+FROM
+	GENERATE_SERIES('2020-01-01'::DATE, '2024-12-31'::DATE, '1 day'::INTERVAL) AS d;
+
+```
+
+### Carga tabela fato de vendas
+
+Duas observações em relação a essa carga:
+- Pelo fato das Surogate Keys só estarem presentes na Staging Area, é necessário fazer um Join com essas tabelas;
+- Como a granularidade da nossa arquitetura é diária, precisamos agrupar e agregar os dados para que não tenhamos problemas com múltiplas vendas diárias; 
+
+```sql
+INSERT INTO schema3.fato_vendas (
+	sk_produto, 
+	sk_cliente, 
+	sk_localidade, 
+	sk_tempo, 
+	quantidade, 
+	preco_venda, 
+	custo_produto, 
+	receita_vendas)
+SELECT 
+	dw_pro.sk_produto,
+	dw_cli.sk_cliente,
+	dw_loc.sk_localidade,
+	dw_tem.sk_tempo, 
+	SUM(st_ven.quantidade) AS quantidade, 
+	SUM(st_ven.preco_venda) AS preco_venda, 
+	SUM(st_ven.custo_produto) AS custo_produto, 
+	SUM(ROUND((CAST(st_ven.quantidade AS numeric) * CAST(st_ven.preco_venda AS numeric)), 2)) AS receita_vendas
+FROM 
+	schema2.st_ft_vendas AS st_ven
+	INNER JOIN schema2.st_ft_clientes AS st_cli ON (st_cli.id_cliente = st_ven.id_cliente)
+	INNER JOIN schema2.st_ft_localidades AS st_loc ON (st_loc.id_localidade = st_ven.id_localizacao)
+	INNER JOIN schema2.st_ft_produtos AS st_pro ON (st_pro.id_produto = st_ven.id_produto)
+	INNER JOIN schema3.dim_tempo AS dw_tem ON (st_ven.data_transacao = dw_tem.data_completa)
+	INNER JOIN schema3.dim_produto AS dw_pro ON (st_pro.id_produto = dw_pro.id_produto)
+	INNER JOIN schema3.dim_localidade AS dw_loc ON (st_loc.id_localidade = dw_loc.id_localidade)
+	INNER JOIN schema3.dim_cliente AS dw_cli ON (st_cli.id_cliente = dw_cli.id_cliente)
+GROUP BY 
+	dw_pro.sk_produto, dw_cli.sk_cliente, dw_loc.sk_localidade, dw_tem.sk_tempo;
+```
+
+### Resultado carga tabelas do Data Warehouse
+
+![ERD Data Warehouse](./images/erd_dw.png)
+
+Abaixo, como ilustração, temos alguns registros que foram inseridos na tabela `fato_vendas`:
+
+![Dados Tabela Fato Vendas](./images/fato_vendas.png)
