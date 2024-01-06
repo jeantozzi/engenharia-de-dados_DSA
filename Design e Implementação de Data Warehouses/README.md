@@ -12,4 +12,4 @@ O link poderá ser inutilizado caso outras formações sejam lançadas pela DSA.
 - [Lab 4 - Capacity Planning de Data Warehouse com Airbyte](./Lab%204%20-%20Capacity%20Planning%20de%20Data%20Warehouse%20com%20Airbyte/)
 - [Lab 5 - Automação do Processo ETL no Data Warehouse com Apache Airflow](./Lab%205%20-%20Automação%20do%20Processo%20ETL%20no%20Data%20Warehouse%20com%20Apache%20Airflow/)
 - [Lab 6 - Apache Airflow para Extração, Transformação e Carga de Dados (ETL) em Tempo Real](./Lab%206%20-%20Apache%20Airflow%20para%20Extração,%20Transformação%20e%20Carga%20de%20Dados%20(ETL)%20em%20Tempo%20Real/)
-- [Projeto 1 - Local Datawarehouse com Docker](./Projeto%201%20-%20Local%20Datawarehouse%20com%20Docker/)
+- [Projeto 1 - Local Data Warehouse com Docker](./Projeto%201%20-%20Local%20Data%20Warehouse%20com%20Docker/)

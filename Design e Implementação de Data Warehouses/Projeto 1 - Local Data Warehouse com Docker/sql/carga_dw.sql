@@ -3,7 +3,7 @@ INSERT INTO schema3.dim_tempo (ano, mes, dia, data_completa)
 SELECT
 	EXTRACT(YEAR FROM d)::INT, 
 	EXTRACT(MONTH FROM d)::INT, 
-    EXTRACT(DAY FROM d)::INT,
+	EXTRACT(DAY FROM d)::INT,
 	d::DATE
 FROM
 	GENERATE_SERIES('2020-01-01'::DATE, '2024-12-31'::DATE, '1 day'::INTERVAL) AS d;
@@ -12,8 +12,8 @@ FROM
 INSERT INTO schema3.dim_cliente (id_cliente, nome, tipo)
 SELECT
 	cli.id_cliente, 
-    cli.nome_cliente, 
-    tip.nome_tipo
+	cli.nome_cliente, 
+	tip.nome_tipo
 FROM
 	schema2.st_ft_clientes AS cli
 	INNER JOIN schema2.st_ft_tipo_cliente AS tip USING(id_tipo);
@@ -22,9 +22,9 @@ FROM
 INSERT INTO schema3.dim_produto (id_produto, nome_produto, categoria, subcategoria)
 SELECT
 	pro.id_produto, 
-    pro.nome_produto, 
-    cat.nome_categoria, 
-    sub.nome_subcategoria
+	pro.nome_produto, 
+	cat.nome_categoria, 
+	sub.nome_subcategoria
 FROM
 	schema2.st_ft_produtos AS pro
 	INNER JOIN schema2.st_ft_subcategorias AS sub USING(id_subcategoria) 
@@ -71,7 +71,7 @@ SELECT
 	SUM(st_ven.quantidade) AS quantidade, 
 	SUM(st_ven.preco_venda) AS preco_venda, 
 	SUM(st_ven.custo_produto) AS custo_produto, 
-	SUM(ROUND((CAST(st_ven.quantidade AS numeric) * CAST(st_ven.preco_venda AS numeric)), 2)) AS receita_vendas
+	SUM(ROUND((CAST(st_ven.quantidade AS NUMERIC) * CAST(st_ven.preco_venda AS NUMERIC)), 2)) AS receita_vendas
 FROM 
 	schema2.st_ft_vendas AS st_ven
 	INNER JOIN schema2.st_ft_clientes AS st_cli ON (st_cli.id_cliente = st_ven.id_cliente)

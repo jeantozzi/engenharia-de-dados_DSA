@@ -36,11 +36,11 @@ CREATE TABLE schema1.ft_produtos (
 
 -- Inserindo dados
 INSERT INTO schema1.ft_produtos (nome_produto, preco_produto, id_subcategoria) VALUES ('Apple MacBook Pro M2', 6589.99, 1);
-INSERT INTO schema1.ft_produtos (nome_produto, preco_produto, id_subcategoria) VALUES ('Desktop Dell 16 GB', 1500.50, 1);
-INSERT INTO schema1.ft_produtos (nome_produto, preco_produto, id_subcategoria) VALUES ('iPhone 14', 4140.00, 2);
-INSERT INTO schema1.ft_produtos (nome_produto, preco_produto, id_subcategoria) VALUES ('Samsung Galaxy Z', 3500.99, 2);
-INSERT INTO schema1.ft_produtos (nome_produto, preco_produto, id_subcategoria) VALUES ('HP 126A Original LaserJet Imaging Drum', 300.90, 3);
-INSERT INTO schema1.ft_produtos (nome_produto, preco_produto, id_subcategoria) VALUES ('Epson LX-300 II USB', 350.99, 3);
+INSERT INTO schema1.ft_produtos (nome_produto, preco_produto, id_subcategoria) VALUES ('Desktop Dell 16 GB', 1500.50, 2);
+INSERT INTO schema1.ft_produtos (nome_produto, preco_produto, id_subcategoria) VALUES ('iPhone 14', 4140.00, 3);
+INSERT INTO schema1.ft_produtos (nome_produto, preco_produto, id_subcategoria) VALUES ('Samsung Galaxy Z', 3500.99, 4);
+INSERT INTO schema1.ft_produtos (nome_produto, preco_produto, id_subcategoria) VALUES ('HP 126A Original LaserJet Imaging Drum', 300.90, 5);
+INSERT INTO schema1.ft_produtos (nome_produto, preco_produto, id_subcategoria) VALUES ('Epson LX-300 II USB', 350.99, 6);
 
 -- Criando a tabela de cidades
 CREATE TABLE schema1.ft_cidades (
@@ -116,39 +116,39 @@ INSERT INTO schema1.ft_clientes (nome_cliente, email_cliente, id_cidade, id_tipo
 
 -- Criando a tabela de vendas
 CREATE TABLE schema1.ft_vendas (
-  id_transacao VARCHAR(50) NOT NULL,
-  id_produto INT NOT NULL,
-  id_cliente INT NOT NULL,
-  id_localizacao INT NOT NULL,
-  data_transacao DATE NULL,
-  quantidade INT NOT NULL,
-  preco_venda DECIMAL(10,2) NOT NULL,
-  custo_produto DECIMAL(10,2) NOT NULL
+    id_transacao VARCHAR(50) NOT NULL,
+    id_produto INT NOT NULL,
+    id_cliente INT NOT NULL,
+    id_localizacao INT NOT NULL,
+    data_transacao DATE NULL,
+    quantidade INT NOT NULL,
+    preco_venda DECIMAL(10, 2) NOT NULL,
+    custo_produto DECIMAL(10, 2) NOT NULL
 );
 
 -- Gerando dados aleatórios
 WITH dados_aleatorios AS (
-  SELECT 
-    FLOOR(RANDOM() * 1000000)::TEXT AS id_transacao,
-    FLOOR(RANDOM() * 6 + 1) AS id_produto,
-    FLOOR(RANDOM() * 10 + 1) AS id_cliente,
-    FLOOR(RANDOM() * 4 + 1) AS id_localizacao,
-    '2022-01-01'::DATE + FLOOR(RANDOM() * 365)::INTEGER AS data_transacao,
-    floor(RANDOM() * 10 + 1) AS quantidade,
-    round(CAST(RANDOM() * 100 + 1 AS NUMERIC), 2) AS preco_venda,
-    round(CAST(RANDOM() * 50 + 1 AS NUMERIC), 2) AS custo_produto
-  FROM GENERATE_SERIES(1, 1000)
+    SELECT 
+        FLOOR(RANDOM() * 1000000)::TEXT AS id_transacao,
+        FLOOR(RANDOM() * 6 + 1) AS id_produto,
+        FLOOR(RANDOM() * 10 + 1) AS id_cliente,
+        FLOOR(RANDOM() * 4 + 1) AS id_localizacao,
+        '2022-01-01'::DATE + FLOOR(RANDOM() * 365)::INTEGER AS data_transacao,
+        FLOOR(RANDOM() * 10 + 1) AS quantidade,
+        ROUND(CAST(RANDOM() * 100 + 1 AS NUMERIC), 2) AS preco_venda,
+        ROUND(CAST(RANDOM() * 50 + 1 AS NUMERIC), 2) AS custo_produto
+    FROM GENERATE_SERIES(1, 1000)
 )
 
 -- Inserindo dados
 INSERT INTO schema1.ft_vendas (id_transacao, id_produto, id_cliente, id_localizacao, data_transacao, quantidade, preco_venda, custo_produto)
 SELECT 
-  'TRAN-' || id_transacao AS id_transacao,
-  id_produto,
-  id_cliente,
-  id_localizacao,
-  data_transacao,
-  quantidade,
-  ROUND(CAST(preco_venda AS NUMERIC), 2),
-  ROUND(CAST(custo_produto AS NUMERIC), 2)
+    'TRAN-' || id_transacao AS id_transacao,
+    id_produto,
+    id_cliente,
+    id_localizacao,
+    data_transacao,
+    quantidade,
+    ROUND(CAST(preco_venda AS NUMERIC), 2),
+    ROUND(CAST(custo_produto AS NUMERIC), 2)
 FROM dados_aleatorios;

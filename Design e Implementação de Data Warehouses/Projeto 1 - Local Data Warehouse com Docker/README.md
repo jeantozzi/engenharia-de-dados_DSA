@@ -1,4 +1,4 @@
-# Local Datawarehouse com Docker
+# Local Data Wwarehouse com Docker
 
 ## Sumário
 - [Apresentação geral do projeto](#apresentação-geral-do-projeto)
@@ -35,10 +35,20 @@
     - [Carga tabela dimensão tempo](#carga-tabela-dimensão-tempo)
     - [Carga tabela fato de vendas](#carga-tabela-fato-de-vendas)
     - [Resultado carga tabelas do Data Warehouse](#resultado-carga-tabelas-do-data-warehouse)
+- [Modificação da granularidade temporal](#modificação-da-granularidade-temporal)
+    - [Alteração na Fonte de Dados](#alteração-na-fonte-de-dados)
+    - [Reexecução da extração via Airbyte](#reexecução-da-extração-via-airbyte)
+    - [Alterações no Data Warehouse](#alterações-no-data-warehouse)
+        - [Alteração e reinserção dos dados da tabela dim_tempo](#alteração-e-reinserção-dos-dados-da-tabela-dim_tempo)
+        - [Nova carga da tabela fato de vendas](#nova-carga-da-tabela-fato-de-vendas)
+- [Adição de nova métrica](#adição-de-nova-métrica)
+    - [Alteração e reinserção dos dados da tabela fato_vendas](#alteração-e-reinserção-dos-dados-da-tabela-fato_vendas)
+    - [Resultado adição nova métrica](#resultado-adição-nova-métrica)
+
 
 ## Apresentação geral do projeto
 
-Para este projeto vamos construir um DW para uma empresa fictícia. A empresa “TechFab Manufatura S.A”.
+Para este projeto vamos construir um Data Warehouse para uma empresa fictícia. A empresa “TechFab Manufatura S.A”.
 
 Uma empresa de manufatura é um tipo de empresa que transforma matérias-primas ou componentes em produtos acabados através do uso de processos industriais. Esse tipo de empresa é responsável por projetar, produzir, montar e testar produtos, tais como automóveis, eletrônicos, alimentos, roupas, máquinas e equipamentos.
 
@@ -72,7 +82,7 @@ Abaixo estão alguns relatórios que a empresa gostaria para entender melhor o d
 
 - **Relatórios de qualidade**: relatórios que fornecem informações sobre a qualidade dos produtos, incluindo os dados de inspeção e teste, o índice de defeito e outros indicadores de qualidade, permitindo que a empresa identifique áreas de melhoria na qualidade e tome medidas corretivas.
 
-Nosso trabalho agora é implementar um projeto de DW que atenda as necessidades da empresa. Vamos ao trabalho.
+Nosso trabalho agora é implementar um projeto de Data Warehouse que atenda as necessidades da empresa. Vamos ao trabalho.
 
 ## Definição do problema de negócio
 
@@ -111,71 +121,71 @@ Os diretores acreditam que algumas categorias de produtos podem não ser lucrati
 - Tabela Dimensão Cliente
 ```sql
 CREATE TABLE `DIM_CLIENTE` (
- `SK_CLIENTE` INTEGER(20) NOT NULL,
- `NK_ID_CLIENTE` VARCHAR(20) NOT NULL,
- `NM_CLIENTE` VARCHAR(50) NOT NULL,
- `NM_CIDADE_CLIENTE` VARCHAR(50) NOT NULL,
- `BY_ACEITA_CAMPANHA` BINARY NOT NULL,
- `DESC_CEP` VARCHAR(10) NOT NULL,
- PRIMARY KEY (`SK_CLIENTE`)
+    `SK_CLIENTE` INTEGER(20) NOT NULL,
+    `NK_ID_CLIENTE` VARCHAR(20) NOT NULL,
+    `NM_CLIENTE` VARCHAR(50) NOT NULL,
+    `NM_CIDADE_CLIENTE` VARCHAR(50) NOT NULL,
+    `BY_ACEITA_CAMPANHA` BINARY NOT NULL,
+    `DESC_CEP` VARCHAR(10) NOT NULL,
+    PRIMARY KEY (`SK_CLIENTE`)
 );
 ```
 
 - Tabela Dimensão Produto
 ```sql
 CREATE TABLE `DIM_PRODUTO` (
- `SK_PRODUTO` INTEGER(20) NOT NULL,
- `NK_ID_PRODUTO` VARCHAR(20) NOT NULL,
- `DESC_SKU` VARCHAR(50) NOT NULL,
- `NM_PRODUTO` VARCHAR(50) NOT NULL,
- `NM_CATEGORIA_PRODUTO` VARCHAR(30) NOT NULL,
- `NM_MARCA_PRODUTO` VARCHAR(30) NOT NULL,
- PRIMARY KEY (`SK_PRODUTO`)
+    `SK_PRODUTO` INTEGER(20) NOT NULL,
+    `NK_ID_PRODUTO` VARCHAR(20) NOT NULL,
+    `DESC_SKU` VARCHAR(50) NOT NULL,
+    `NM_PRODUTO` VARCHAR(50) NOT NULL,
+    `NM_CATEGORIA_PRODUTO` VARCHAR(30) NOT NULL,
+    `NM_MARCA_PRODUTO` VARCHAR(30) NOT NULL,
+    PRIMARY KEY (`SK_PRODUTO`)
 );
 ```
 
 - Tabela Dimensão Localidade
 ```sql
 CREATE TABLE `DIM_LOCALIDADE` (
- `SK_LOCALIDADE` INTEGER(20) NOT NULL,
- `NK_ID_LOCALIDADE` VARCHAR(20) NOT NULL,
- `NM_LOCALIDADE` VARCHAR(50) NOT NULL,
- `NM_CIDADE_LOCALIDADE` VARCHAR(50) NOT NULL,
- `NM_REGIAO_LOCALIDADE` VARCHAR(50) NOT NULL,
- PRIMARY KEY (`SK_LOCALIDADE`)
+    `SK_LOCALIDADE` INTEGER(20) NOT NULL,
+    `NK_ID_LOCALIDADE` VARCHAR(20) NOT NULL,
+    `NM_LOCALIDADE` VARCHAR(50) NOT NULL,
+    `NM_CIDADE_LOCALIDADE` VARCHAR(50) NOT NULL,
+    `NM_REGIAO_LOCALIDADE` VARCHAR(50) NOT NULL,
+    PRIMARY KEY (`SK_LOCALIDADE`)
 );
 ```
 
 - Tabela Dimensão Tempo
 ```sql
 CREATE TABLE `DIM_TEMPO` (
- `SK_DATA` INTEGER(20) NOT NULL,
- `DATA` DATE NOT NULL,
- `DESC_DATA_COMPLETA` VARCHAR(50) NOT NULL,
- `NR_ANO` INTEGER(4) NOT NULL,
- `NM_TRIMESTRE` VARCHAR(20) NOT NULL,
- `NR_MES` INTEGER NOT NULL,
- `NM_MES` VARCHAR(20) NOT NULL,
- `NR_SEMANA` INTEGER NOT NULL,
- `NM_ANO_SEMANA` VARCHAR(20) NOT NULL,
- `NR_DIA` INTEGER NOT NULL,
- `NM_DIA_SEMANA` VARCHAR (20) NOT NULL,
- `FLAG_FERIADO` CHAR(3) NOT NULL,
- `NM_FERIADO` VARCHAR(20) NOT NULL,
- PRIMARY KEY (`SK_DATA`)
+    `SK_DATA` INTEGER(20) NOT NULL,
+    `DATA` DATE NOT NULL,
+    `DESC_DATA_COMPLETA` VARCHAR(50) NOT NULL,
+    `NR_ANO` INTEGER(4) NOT NULL,
+    `NM_TRIMESTRE` VARCHAR(20) NOT NULL,
+    `NR_MES` INTEGER NOT NULL,
+    `NM_MES` VARCHAR(20) NOT NULL,
+    `NR_SEMANA` INTEGER NOT NULL,
+    `NM_ANO_SEMANA` VARCHAR(20) NOT NULL,
+    `NR_DIA` INTEGER NOT NULL,
+    `NM_DIA_SEMANA` VARCHAR (20) NOT NULL,
+    `FLAG_FERIADO` CHAR(3) NOT NULL,
+    `NM_FERIADO` VARCHAR(20) NOT NULL,
+    PRIMARY KEY (`SK_DATA`)
 );
 ```
 
 - Tabela Fato de Vendas
 ```sql
 CREATE TABLE `FATO_VENDA` (
- `SK_CLIENTE` INTEGER(20) NOT NULL,
- `SK_PRODUTO` INTEGER(20) NOT NULL,
- `SK_LOCALIDADE` INTEGER(20) NOT NULL,
- `SK_DATA` INTEGER(20) NOT NULL,
- `VL_VENDA` DECIMAL NOT NULL,
- `QTD_VENDA` INTEGER NOT NULL,
- PRIMARY KEY (`SK_CLIENTE`, `SK_PRODUTO`, `SK_LOCALIDADE`, `SK_DATA`)
+    `SK_CLIENTE` INTEGER(20) NOT NULL,
+    `SK_PRODUTO` INTEGER(20) NOT NULL,
+    `SK_LOCALIDADE` INTEGER(20) NOT NULL,
+    `SK_DATA` INTEGER(20) NOT NULL,
+    `VL_VENDA` DECIMAL NOT NULL,
+    `QTD_VENDA` INTEGER NOT NULL,
+    PRIMARY KEY (`SK_CLIENTE`, `SK_PRODUTO`, `SK_LOCALIDADE`, `SK_DATA`)
 );
 ```
 
@@ -187,7 +197,7 @@ CREATE TABLE `FATO_VENDA` (
     - Os dados serão levados do servidor da Fonte de Dados para o servidor da Staging Area. Aqui não haverá filtro ou transformação e os dados brutos das tabelas correspondentes serão levados para a Staging Area. O objetivo é gerar a menor sobrecarga possível no servidor de origem dos dados.
 
 - Transformação e Carga de Dados via SQL:
-    - Na Staging Area os dados serão limpos, transformados e processados com linguagem SQL. A linguagem SQL também será usada para carregar os dados no DW (o que pode ser feito com uma query).
+    - Na Staging Area os dados serão limpos, transformados e processados com linguagem SQL. A linguagem SQL também será usada para carregar os dados no Data Warehouse (o que pode ser feito com uma query).
 
 ## Criação dos containers de banco de dados
 
@@ -198,7 +208,7 @@ Executaremos os comandos a seguir para a criação dos containers:
 $ docker run --name dbdsafonte -p 5433:5432 -e POSTGRES_USER=dbadmin -e POSTGRES_PASSWORD=dbadmin123 -e POSTGRES_DB=postgresDB -d postgres
 ```
 
-- Staging Area/DW
+- Staging Area/Data Warehouse
 ```bash
 $ docker run --name dbdsadestino -p 5434:5432 -e POSTGRES_USER=dbadmin -e POSTGRES_PASSWORD=dbadmin123 -e POSTGRES_DB=postgresDB -d postgres
 ```
@@ -207,13 +217,13 @@ O resultado é a criação de dois containers de uma única imagem Postgres:
 
 ![Criando os containers](./images/containers.png)
 
-## Criação dos schemas
+## Criação dos _schemas_
 
 - Fonte de Dados
 
 ![Schema 1](./images/schema_1.png)
 
-- Staging Area/DW
+- Staging Area/Data Warehouse
 
 ![Schema 2 e 3](./images/schema_2-3.png)
 
@@ -227,14 +237,14 @@ As tabelas terão um prefixo na nomenclatura dependendo do schema em questão, c
 - Staging Area
     - Prefixo `st_` para as tabelas
 
-- DW
+- Data Warehouse
     - Prefixo `dim_` para as tabelas de dimensão
-    - Prefixo `ft_` para a tabela fato
+    - Prefixo `fato_` para a tabela fato
 
 ## Criação e carga das tabelas no container de Fonte de Dados
 
 Executaremos os comandos abaixo para criar e popular as tabelas no banco de Fonte de Dados.
-É possível encontrá-los consolidados [neste arquivo .sql](./sql/tabelas_fonte.sql)
+É possível encontrá-los consolidados [neste arquivo .sql](./sql/tabelas_fonte.sql).
 
 ### Tabela de categorias
 
@@ -283,11 +293,11 @@ CREATE TABLE schema1.ft_produtos (
 
 -- Inserindo dados
 INSERT INTO schema1.ft_produtos (nome_produto, preco_produto, id_subcategoria) VALUES ('Apple MacBook Pro M2', 6589.99, 1);
-INSERT INTO schema1.ft_produtos (nome_produto, preco_produto, id_subcategoria) VALUES ('Desktop Dell 16 GB', 1500.50, 1);
-INSERT INTO schema1.ft_produtos (nome_produto, preco_produto, id_subcategoria) VALUES ('iPhone 14', 4140.00, 2);
-INSERT INTO schema1.ft_produtos (nome_produto, preco_produto, id_subcategoria) VALUES ('Samsung Galaxy Z', 3500.99, 2);
-INSERT INTO schema1.ft_produtos (nome_produto, preco_produto, id_subcategoria) VALUES ('HP 126A Original LaserJet Imaging Drum', 300.90, 3);
-INSERT INTO schema1.ft_produtos (nome_produto, preco_produto, id_subcategoria) VALUES ('Epson LX-300 II USB', 350.99, 3);
+INSERT INTO schema1.ft_produtos (nome_produto, preco_produto, id_subcategoria) VALUES ('Desktop Dell 16 GB', 1500.50, 2);
+INSERT INTO schema1.ft_produtos (nome_produto, preco_produto, id_subcategoria) VALUES ('iPhone 14', 4140.00, 3);
+INSERT INTO schema1.ft_produtos (nome_produto, preco_produto, id_subcategoria) VALUES ('Samsung Galaxy Z', 3500.99, 4);
+INSERT INTO schema1.ft_produtos (nome_produto, preco_produto, id_subcategoria) VALUES ('HP 126A Original LaserJet Imaging Drum', 300.90, 5);
+INSERT INTO schema1.ft_produtos (nome_produto, preco_produto, id_subcategoria) VALUES ('Epson LX-300 II USB', 350.99, 6);
 ```
 
 ### Tabela de cidades
@@ -383,41 +393,41 @@ INSERT INTO schema1.ft_clientes (nome_cliente, email_cliente, id_cidade, id_tipo
 ```sql
 -- Criando a tabela
 CREATE TABLE schema1.ft_vendas (
-  id_transacao VARCHAR(50) NOT NULL,
-  id_produto INT NOT NULL,
-  id_cliente INT NOT NULL,
-  id_localizacao INT NOT NULL,
-  data_transacao DATE NULL,
-  quantidade INT NOT NULL,
-  preco_venda DECIMAL(10,2) NOT NULL,
-  custo_produto DECIMAL(10,2) NOT NULL
+    id_transacao VARCHAR(50) NOT NULL,
+    id_produto INT NOT NULL,
+    id_cliente INT NOT NULL,
+    id_localizacao INT NOT NULL,
+    data_transacao DATE NULL,
+    quantidade INT NOT NULL,
+    preco_venda DECIMAL(10, 2) NOT NULL,
+    custo_produto DECIMAL(10, 2) NOT NULL
 );
 
 -- Gerando dados aleatórios
 WITH dados_aleatorios AS (
-  SELECT 
-    FLOOR(RANDOM() * 1000000)::TEXT AS id_transacao,
-    FLOOR(RANDOM() * 6 + 1) AS id_produto,
-    FLOOR(RANDOM() * 10 + 1) AS id_cliente,
-    FLOOR(RANDOM() * 4 + 1) AS id_localizacao,
-    '2022-01-01'::DATE + FLOOR(RANDOM() * 365)::INTEGER AS data_transacao,
-    floor(RANDOM() * 10 + 1) AS quantidade,
-    round(CAST(RANDOM() * 100 + 1 AS NUMERIC), 2) AS preco_venda,
-    round(CAST(RANDOM() * 50 + 1 AS NUMERIC), 2) AS custo_produto
-  FROM GENERATE_SERIES(1, 1000)
+    SELECT 
+        FLOOR(RANDOM() * 1000000)::TEXT AS id_transacao,
+        FLOOR(RANDOM() * 6 + 1) AS id_produto,
+        FLOOR(RANDOM() * 10 + 1) AS id_cliente,
+        FLOOR(RANDOM() * 4 + 1) AS id_localizacao,
+        '2022-01-01'::DATE + FLOOR(RANDOM() * 365)::INTEGER AS data_transacao,
+        FLOOR(RANDOM() * 10 + 1) AS quantidade,
+        ROUND(CAST(RANDOM() * 100 + 1 AS NUMERIC), 2) AS preco_venda,
+        ROUND(CAST(RANDOM() * 50 + 1 AS NUMERIC), 2) AS custo_produto
+    FROM GENERATE_SERIES(1, 1000)
 )
 
 -- Inserindo dados
 INSERT INTO schema1.ft_vendas (id_transacao, id_produto, id_cliente, id_localizacao, data_transacao, quantidade, preco_venda, custo_produto)
 SELECT 
-  'TRAN-' || id_transacao AS id_transacao,
-  id_produto,
-  id_cliente,
-  id_localizacao,
-  data_transacao,
-  quantidade,
-  ROUND(CAST(preco_venda AS NUMERIC), 2),
-  ROUND(CAST(custo_produto AS NUMERIC), 2)
+    'TRAN-' || id_transacao AS id_transacao,
+    id_produto,
+    id_cliente,
+    id_localizacao,
+    data_transacao,
+    quantidade,
+    ROUND(CAST(preco_venda AS NUMERIC), 2),
+    ROUND(CAST(custo_produto AS NUMERIC), 2)
 FROM dados_aleatorios;
 ```
 
@@ -434,7 +444,6 @@ Abaixo, como ilustração, temos alguns registros que foram inseridos na tabela 
 ## Instalação do Airbyte para o processo de Extração
 
 Instalaremos o Airbyte conforme instruções descritas no site oficial (https://docs.airbyte.com/deploying-airbyte/local-deployment).
-
 Precisamos clonar o repositório do Airbyte para Docker e depois executá-lo:
 
 ```bash
@@ -487,25 +496,25 @@ Dentre vários motivos, temos alguns principais:
 
 - **Eliminação  de  problemas  de  desempenho:**  as  chaves  naturais  podem  ser  grandes  e complexas,  o  que  pode  afetar  negativamente  o  desempenho  do  banco  de  dados.  As  chaves surrogate,  por  outro  lado,  são  geralmente  simples  e  pequenas,  o  que  torna  a  pesquisa  e  a indexação mais rápidas e eficientes.
 
-- **Facilidade de manutenção:** as chaves naturais podem mudar com o tempo, o que pode afetar a integridade dos dados. As chaves surrogate, por outro lado, são atribuídas pelo sistema e permanecem estáveis ao longo do tempo, o que facilita a manutenção do DW.
+- **Facilidade de manutenção:** as chaves naturais podem mudar com o tempo, o que pode afetar a integridade dos dados. As chaves surrogate, por outro lado, são atribuídas pelo sistema e permanecem estáveis ao longo do tempo, o que facilita a manutenção do Data Warehouse.
 
-- **Flexibilidade:** as  chaves  surrogate  são  independentes  do  contexto  dos  dados,  o  que significa que podem ser usadas em diferentes tabelas e em diferentes modelos de dados, sem afetar a integridade dos dados. Isso permite que o DW seja mais flexível e escalável.
+- **Flexibilidade:** as  chaves  surrogate  são  independentes  do  contexto  dos  dados,  o  que significa que podem ser usadas em diferentes tabelas e em diferentes modelos de dados, sem afetar a integridade dos dados. Isso permite que o Data Warehouse seja mais flexível e escalável.
 
-- **Integraçãode dados:** as chaves surrogate permitem a integração de dados de diferentes fontes,  mesmo  que  as  chaves  naturais  sejam  diferentes.  Isso  significa  que  o  DW  pode  ser alimentado  com  dados  de  diferentes  sistemas  e  fontes,  tornando-o  mais  completo  e  útil  para análises.
+- **Integraçãode dados:** as chaves surrogate permitem a integração de dados de diferentes fontes,  mesmo  que  as  chaves  naturais  sejam  diferentes.  Isso  significa  que  o  Data Warehouse  pode  ser alimentado  com  dados  de  diferentes  sistemas  e  fontes,  tornando-o  mais  completo  e  útil  para análises.
 
 - **Segurança:**  as  chaves  surrogate  podem  ser  criptografadas,  tornando-as  mais  seguras  e protegidas contra ameaças externas.
 
 Executaremos os comandos abaixo para criar as tabelas no Data Warehouse.
-É possível encontrá-los consolidados [neste arquivo .sql](./sql/tabelas_dw.sql)
+É possível encontrá-los consolidados [neste arquivo .sql](./sql/tabelas_dw.sql).
 
 ### Criação tabela dimensão cliente
 
 ```sql
 CREATE TABLE schema3.dim_cliente (
-  sk_cliente SERIAL PRIMARY KEY,
-  id_cliente INT NOT NULL,
-  nome VARCHAR(50) NOT NULL,
-  tipo VARCHAR(50) NOT NULL
+    sk_cliente SERIAL PRIMARY KEY,
+    id_cliente INT NOT NULL,
+    nome VARCHAR(50) NOT NULL,
+    tipo VARCHAR(50) NOT NULL
 );
 ```
 
@@ -513,11 +522,11 @@ CREATE TABLE schema3.dim_cliente (
 
 ```sql
 CREATE TABLE schema3.dim_produto (
-  sk_produto SERIAL PRIMARY KEY,
-  id_produto INT NOT NULL,
-  nome_produto VARCHAR(50) NOT NULL,
-  categoria VARCHAR(50) NOT NULL,
-  subcategoria VARCHAR(50) NOT NULL
+    sk_produto SERIAL PRIMARY KEY,
+    id_produto INT NOT NULL,
+    nome_produto VARCHAR(50) NOT NULL,
+    categoria VARCHAR(50) NOT NULL,
+    subcategoria VARCHAR(50) NOT NULL
 );
 ```
 
@@ -525,12 +534,12 @@ CREATE TABLE schema3.dim_produto (
 
 ```sql
 CREATE TABLE schema3.dim_localidade (
-  sk_localidade SERIAL PRIMARY KEY,
-  id_localidade INT NOT NULL,
-  pais VARCHAR(50) NOT NULL,
-  regiao VARCHAR(50) NOT NULL,
-  estado VARCHAR(50) NOT NULL,
-  cidade VARCHAR(50) NOT NULL
+    sk_localidade SERIAL PRIMARY KEY,
+    id_localidade INT NOT NULL,
+    pais VARCHAR(50) NOT NULL,
+    regiao VARCHAR(50) NOT NULL,
+    estado VARCHAR(50) NOT NULL,
+    cidade VARCHAR(50) NOT NULL
 );
 ```
 
@@ -538,11 +547,11 @@ CREATE TABLE schema3.dim_localidade (
 
 ```sql
 CREATE TABLE schema3.dim_tempo (
-  sk_tempo SERIAL PRIMARY KEY,
-  data_completa date,
-  ano INT NOT NULL,
-  mes INT NOT NULL,
-  dia INT NOT NULL
+    sk_tempo SERIAL PRIMARY KEY,
+    data_completa date,
+    ano INT NOT NULL,
+    mes INT NOT NULL,
+    dia INT NOT NULL
 );
 ```
 
@@ -550,43 +559,43 @@ CREATE TABLE schema3.dim_tempo (
 
 ```sql
 CREATE TABLE schema3.fato_vendas (
-  sk_produto INT NOT NULL,
-  sk_cliente INT NOT NULL,
-  sk_localidade INT NOT NULL,
-  sk_tempo INT NOT NULL,
-  quantidade INT NOT NULL,
-  preco_venda DECIMAL(10, 2) NOT NULL,
-  custo_produto DECIMAL(10, 2) NOT NULL,
-  receita_vendas DECIMAL(10, 2) NOT NULL,
-  PRIMARY KEY (sk_produto, sk_cliente, sk_localidade, sk_tempo),
-  FOREIGN KEY (sk_produto) REFERENCES schema3.dim_produto (sk_produto),
-  FOREIGN KEY (sk_cliente) REFERENCES schema3.dim_cliente (sk_cliente),
-  FOREIGN KEY (sk_localidade) REFERENCES schema3.dim_localidade (sk_localidade),
-  FOREIGN KEY (sk_tempo) REFERENCES schema3.dim_tempo (sk_tempo)
+    sk_produto INT NOT NULL,
+    sk_cliente INT NOT NULL,
+    sk_localidade INT NOT NULL,
+    sk_tempo INT NOT NULL,
+    quantidade INT NOT NULL,
+    preco_venda DECIMAL(10, 2) NOT NULL,
+    custo_produto DECIMAL(10, 2) NOT NULL,
+    receita_vendas DECIMAL(10, 2) NOT NULL,
+    PRIMARY KEY (sk_produto, sk_cliente, sk_localidade, sk_tempo),
+    FOREIGN KEY (sk_produto) REFERENCES schema3.dim_produto (sk_produto),
+    FOREIGN KEY (sk_cliente) REFERENCES schema3.dim_cliente (sk_cliente),
+    FOREIGN KEY (sk_localidade) REFERENCES schema3.dim_localidade (sk_localidade),
+    FOREIGN KEY (sk_tempo) REFERENCES schema3.dim_tempo (sk_tempo)
 );
 ```
 ### Resultado criação tabelas do Data Warehouse
 
 Após a execução dos comandos, teremos as tabelas constando na hierarquia, como abaixo:
 
-![Tabelas DW](./images/tabelas_dw.png)
+![Tabelas Data Warehouse](./images/tabelas_dw.png)
 
 ## Carga das tabelas do Data Warehouse
 
 Executaremos os comandos abaixo para popular as tabelas no Data Warehouse.
-É possível encontrá-los consolidados [neste arquivo .sql](./sql/carga_dw.sql)
+É possível encontrá-los consolidados [neste arquivo .sql](./sql/carga_dw.sql).
 
 ### Carga tabela dimensão cliente
 
 ```sql
 INSERT INTO schema3.dim_cliente (id_cliente, nome, tipo)
 SELECT
-	cli.id_cliente, 
+    cli.id_cliente, 
     cli.nome_cliente, 
     tip.nome_tipo
 FROM
-	schema2.st_ft_clientes AS cli
-	INNER JOIN schema2.st_ft_tipo_cliente AS tip USING(id_tipo);
+    schema2.st_ft_clientes AS cli
+    INNER JOIN schema2.st_ft_tipo_cliente AS tip USING(id_tipo);
 ```
 
 ### Carga tabela dimensão localidade
@@ -594,25 +603,25 @@ FROM
 ```sql
 INSERT INTO schema3.dim_localidade (id_localidade, pais, regiao, estado, cidade)
 SELECT
-	loc.id_localidade, 
-	loc.pais, 
-	loc.regiao, 
-	CASE
-		WHEN cid.nome_cidade = 'Natal' THEN 'Rio Grande do Norte'
-		WHEN cid.nome_cidade = 'Rio de Janeiro' THEN 'Rio de Janeiro'
-		WHEN cid.nome_cidade = 'Belo Horizonte' THEN 'Minas Gerais'
-		WHEN cid.nome_cidade = 'Salvador' THEN 'Bahia'
-		WHEN cid.nome_cidade = 'Blumenau' THEN 'Santa Catarina'
-		WHEN cid.nome_cidade = 'Curitiba' THEN 'Paraná'
-		WHEN cid.nome_cidade = 'Fortaleza' THEN 'Ceará'
-		WHEN cid.nome_cidade = 'Recife' THEN 'Pernambuco'
-		WHEN cid.nome_cidade = 'Porto Alegre' THEN 'Rio Grande do Sul'
-		WHEN cid.nome_cidade = 'Manaus' THEN 'Amazonas'
-	END estado, 
-	cid.nome_cidade
+    loc.id_localidade, 
+    loc.pais, 
+    loc.regiao, 
+    CASE
+        WHEN cid.nome_cidade = 'Natal' THEN 'Rio Grande do Norte'
+        WHEN cid.nome_cidade = 'Rio de Janeiro' THEN 'Rio de Janeiro'
+        WHEN cid.nome_cidade = 'Belo Horizonte' THEN 'Minas Gerais'
+        WHEN cid.nome_cidade = 'Salvador' THEN 'Bahia'
+        WHEN cid.nome_cidade = 'Blumenau' THEN 'Santa Catarina'
+        WHEN cid.nome_cidade = 'Curitiba' THEN 'Paraná'
+        WHEN cid.nome_cidade = 'Fortaleza' THEN 'Ceará'
+        WHEN cid.nome_cidade = 'Recife' THEN 'Pernambuco'
+        WHEN cid.nome_cidade = 'Porto Alegre' THEN 'Rio Grande do Sul'
+        WHEN cid.nome_cidade = 'Manaus' THEN 'Amazonas'
+    END estado, 
+    cid.nome_cidade
 FROM
-	schema2.st_ft_localidades AS loc
-	INNER JOIN schema2.st_ft_cidades AS cid USING(id_cidade);
+    schema2.st_ft_localidades AS loc
+    INNER JOIN schema2.st_ft_cidades AS cid USING(id_cidade);
 ```
 
 ### Carga tabela dimensão produto
@@ -620,15 +629,14 @@ FROM
 ```sql
 INSERT INTO schema3.dim_produto (id_produto, nome_produto, categoria, subcategoria)
 SELECT
-	pro.id_produto, 
+    pro.id_produto, 
     pro.nome_produto, 
     cat.nome_categoria, 
     sub.nome_subcategoria
 FROM
-	schema2.st_ft_produtos AS pro
-	INNER JOIN schema2.st_ft_subcategorias AS sub USING(id_subcategoria) 
-	INNER JOIN schema2.st_ft_categorias AS cat USING(id_categoria);
-
+    schema2.st_ft_produtos AS pro
+    INNER JOIN schema2.st_ft_subcategorias AS sub USING(id_subcategoria) 
+    INNER JOIN schema2.st_ft_categorias AS cat USING(id_categoria);
 ```
 
 ### Carga tabela dimensão tempo
@@ -636,13 +644,12 @@ FROM
 ```sql
 INSERT INTO schema3.dim_tempo (ano, mes, dia, data_completa)
 SELECT
-	EXTRACT(YEAR FROM d)::INT, 
-	EXTRACT(MONTH FROM d)::INT, 
+    EXTRACT(YEAR FROM d)::INT, 
+    EXTRACT(MONTH FROM d)::INT, 
     EXTRACT(DAY FROM d)::INT,
-	d::DATE
+    d::DATE
 FROM
-	GENERATE_SERIES('2020-01-01'::DATE, '2024-12-31'::DATE, '1 day'::INTERVAL) AS d;
-
+    GENERATE_SERIES('2020-01-01'::DATE, '2024-12-31'::DATE, '1 day'::INTERVAL) AS d;
 ```
 
 ### Carga tabela fato de vendas
@@ -653,34 +660,34 @@ Duas observações em relação a essa carga:
 
 ```sql
 INSERT INTO schema3.fato_vendas (
-	sk_produto, 
-	sk_cliente, 
-	sk_localidade, 
-	sk_tempo, 
-	quantidade, 
-	preco_venda, 
-	custo_produto, 
-	receita_vendas)
+    sk_produto, 
+    sk_cliente, 
+    sk_localidade, 
+    sk_tempo, 
+    quantidade, 
+    preco_venda, 
+    custo_produto, 
+    receita_vendas)
 SELECT 
-	dw_pro.sk_produto,
-	dw_cli.sk_cliente,
-	dw_loc.sk_localidade,
-	dw_tem.sk_tempo, 
-	SUM(st_ven.quantidade) AS quantidade, 
-	SUM(st_ven.preco_venda) AS preco_venda, 
-	SUM(st_ven.custo_produto) AS custo_produto, 
-	SUM(ROUND((CAST(st_ven.quantidade AS numeric) * CAST(st_ven.preco_venda AS numeric)), 2)) AS receita_vendas
+    dw_pro.sk_produto,
+    dw_cli.sk_cliente,
+    dw_loc.sk_localidade,
+    dw_tem.sk_tempo, 
+    SUM(st_ven.quantidade) AS quantidade, 
+    SUM(st_ven.preco_venda) AS preco_venda, 
+    SUM(st_ven.custo_produto) AS custo_produto, 
+    SUM(ROUND((CAST(st_ven.quantidade AS numeric) * CAST(st_ven.preco_venda AS numeric)), 2)) AS receita_vendas
 FROM 
-	schema2.st_ft_vendas AS st_ven
-	INNER JOIN schema2.st_ft_clientes AS st_cli ON (st_cli.id_cliente = st_ven.id_cliente)
-	INNER JOIN schema2.st_ft_localidades AS st_loc ON (st_loc.id_localidade = st_ven.id_localizacao)
-	INNER JOIN schema2.st_ft_produtos AS st_pro ON (st_pro.id_produto = st_ven.id_produto)
-	INNER JOIN schema3.dim_tempo AS dw_tem ON (st_ven.data_transacao = dw_tem.data_completa)
-	INNER JOIN schema3.dim_produto AS dw_pro ON (st_pro.id_produto = dw_pro.id_produto)
-	INNER JOIN schema3.dim_localidade AS dw_loc ON (st_loc.id_localidade = dw_loc.id_localidade)
-	INNER JOIN schema3.dim_cliente AS dw_cli ON (st_cli.id_cliente = dw_cli.id_cliente)
+    schema2.st_ft_vendas AS st_ven
+    INNER JOIN schema2.st_ft_clientes AS st_cli ON (st_cli.id_cliente = st_ven.id_cliente)
+    INNER JOIN schema2.st_ft_localidades AS st_loc ON (st_loc.id_localidade = st_ven.id_localizacao)
+    INNER JOIN schema2.st_ft_produtos AS st_pro ON (st_pro.id_produto = st_ven.id_produto)
+    INNER JOIN schema3.dim_tempo AS dw_tem ON (st_ven.data_transacao = dw_tem.data_completa)
+    INNER JOIN schema3.dim_produto AS dw_pro ON (st_pro.id_produto = dw_pro.id_produto)
+    INNER JOIN schema3.dim_localidade AS dw_loc ON (st_loc.id_localidade = dw_loc.id_localidade)
+    INNER JOIN schema3.dim_cliente AS dw_cli ON (st_cli.id_cliente = dw_cli.id_cliente)
 GROUP BY 
-	dw_pro.sk_produto, dw_cli.sk_cliente, dw_loc.sk_localidade, dw_tem.sk_tempo;
+    dw_pro.sk_produto, dw_cli.sk_cliente, dw_loc.sk_localidade, dw_tem.sk_tempo;
 ```
 
 ### Resultado carga tabelas do Data Warehouse
@@ -690,3 +697,200 @@ GROUP BY
 Abaixo, como ilustração, temos alguns registros que foram inseridos na tabela `fato_vendas`:
 
 ![Dados Tabela Fato Vendas](./images/fato_vendas.png)
+
+## Modificação da granularidade temporal
+
+Agora vamos implementar uma mudança de granularidade na dimensão tempo.
+
+Atualmente os dados vêm da Fonte de Dados com granularidade **diária**, e precisaremos fazer algumas modificações na Fonte de Dados, depois da Staging Area e no Data Warehouse, nesta ordem.
+A nova granularidade será de **hora**.
+
+### Alteração na Fonte de Dados
+
+Executaremos os comandos abaixo com o intuito de recriar a tabela com informação temporal na Fonte de Dados, presente no container `dbdsafonte`. 
+É possível encontrá-los consolidados [neste arquivo .sql](./sql/ajuste_granularidade_tabela_fonte.sql).
+
+```sql
+-- Deletando a tabela atual
+DROP TABLE schema1.ft_vendas;
+
+-- Criando a nova tabela com a data da transação em formato TIMESTAMP em vez de DATE
+CREATE TABLE schema1.ft_vendas (
+    id_transacao VARCHAR(50) NOT NULL,
+    id_produto INT NOT NULL,
+    id_cliente INT NOT NULL,
+    id_localizacao INT NOT NULL,
+    data_transacao TIMESTAMP NULL,
+    quantidade INT NOT NULL,
+    preco_venda DECIMAL(10, 2) NOT NULL,
+    custo_produto DECIMAL(10, 2) NOT NULL
+);
+
+-- Gerando dados aleatórios
+WITH dados AS (
+    SELECT 
+        FLOOR(RANDOM() * 1000000)::TEXT AS id_transacao,
+        FLOOR(RANDOM() * 6 + 1) AS id_produto,
+        FLOOR(RANDOM() * 10 + 1) AS id_cliente,
+        FLOOR(RANDOM() * 4 + 1) AS id_localizacao,
+        ('2022-01-01'::DATE + (RANDOM() * 365)::INTEGER) + INTERVAL '1 second' * (FLOOR(RANDOM() * 86400)::INTEGER) AS data_transacao,
+        FLOOR(RANDOM() * 10 + 1) AS quantidade,
+        ROUND(CAST(RANDOM() * 100 + 1 AS NUMERIC), 2) AS preco_venda,
+        ROUND(CAST(RANDOM() * 50 + 1 AS NUMERIC), 2) AS custo_produto
+    FROM GENERATE_SERIES(1, 1000)
+)
+
+-- Inserindo dados
+INSERT INTO schema1.ft_vendas (id_transacao, id_produto, id_cliente, id_localizacao, data_transacao, quantidade, preco_venda, custo_produto)
+SELECT 
+    'TRAN-' || id_transacao AS id_transacao,
+    id_produto,
+    id_cliente,
+    id_localizacao,
+    data_transacao,
+    quantidade,
+    ROUND(CAST(preco_venda AS NUMERIC), 2),
+    ROUND(CAST(custo_produto AS NUMERIC), 2)
+FROM dados;
+```
+
+### Reexecução da extração via Airbyte
+
+Como mudamos somente uma das tabelas que vão da Fonte de Dados para a Staging Area, utilizaremos a funcionalidade do Airbyte de sincronizar somente a tabela em questão.
+
+![Airbyte sync vendas](./images/airbyte_sync_vendas.png)
+
+Certifique-se que de acionar a opção de reset no schema da conexão de fonte de dados, uma vez que houve modificação. Caso contrário, haverá erro de conversão e não teremos o resultado desejado.
+
+![Airbyte refresh schema](./images/airbyte_refresh.png)
+
+Após execução do processo de carga, temos os dados atualizados na Staging Area, conforme abaixo:
+
+![Dados schema modificado](./images/dados_schema_modificado.png)
+
+### Alterações no Data Warehouse
+
+Executaremos os comandos abaixo com o intuito de alterar a tabela `dim_tempo` e recarregar os dados na tabela `fato_vendas`, ambas presentes no container Data Warehouse.
+É possível encontrá-los consolidados [neste arquivo .sql](./sql/ajuste_granularidade_tabela_fonte.sql).
+
+#### Alteração e reinserção dos dados da tabela dim_tempo
+
+```sql
+-- Incluindo mais uma coluna na dimensão tempo
+ALTER TABLE IF EXISTS schema3.dim_tempo
+    ADD COLUMN hora text;
+
+-- Limpando as tabelas da hierarquia para reexecutar a carga
+TRUNCATE TABLE schema3.fato_vendas;
+TRUNCATE TABLE schema3.dim_tempo CASCADE;
+
+-- Carregando novamente a dimensão tempo
+INSERT INTO schema3.dim_tempo (ano, mes, dia, hora, data_completa)
+SELECT
+    EXTRACT(YEAR FROM d)::INT, 
+    EXTRACT(MONTH FROM d)::INT, 
+    EXTRACT(DAY FROM d)::INT,
+    LPAD(EXTRACT(HOUR FROM d)::INTEGER::TEXT, 2, '0'), 
+    d::DATE
+FROM
+    GENERATE_SERIES('2020-01-01'::DATE, '2024-12-31'::DATE, '1 hour'::INTERVAL) AS d;
+```
+
+#### Nova carga da tabela fato de vendas
+
+```sql
+-- Carregando novamente a tabela fato de vendas
+INSERT INTO schema3.fato_vendas (
+    sk_produto, 
+    sk_cliente, 
+    sk_localidade, 
+    sk_tempo, 
+    quantidade, 
+    preco_venda, 
+    custo_produto, 
+    receita_vendas)
+SELECT 
+    dw_pro.sk_produto,
+    dw_cli.sk_cliente,
+    dw_loc.sk_localidade,
+    dw_tem.sk_tempo, 
+    SUM(st_ven.quantidade) AS quantidade, 
+    SUM(st_ven.preco_venda) AS preco_venda, 
+    SUM(st_ven.custo_produto) AS custo_produto, 
+    SUM(ROUND((CAST(st_ven.quantidade AS NUMERIC) * CAST(st_ven.preco_venda AS NUMERIC)), 2)) AS receita_vendas
+FROM 
+    schema2.st_ft_vendas AS st_ven
+    INNER JOIN schema2.st_ft_clientes AS st_cli ON (st_cli.id_cliente = st_ven.id_cliente)
+    INNER JOIN schema2.st_ft_localidades AS st_loc ON (st_loc.id_localidade = st_ven.id_localizacao)
+    INNER JOIN schema2.st_ft_produtos AS st_pro ON (st_pro.id_produto = st_ven.id_produto)
+    INNER JOIN schema3.dim_tempo AS dw_tem ON (
+        TO_CHAR(st_ven.data_transacao, 'YYYY-MM-DD') = TO_CHAR(dw_tem.data_completa, 'YYYY-MM-DD') AND
+        TO_CHAR(st_ven.data_transacao, 'HH') = dw_tem.hora)
+    INNER JOIN schema3.dim_produto AS dw_pro ON (st_pro.id_produto = dw_pro.id_produto)
+    INNER JOIN schema3.dim_localidade AS dw_loc ON (st_loc.id_localidade = dw_loc.id_localidade)
+    INNER JOIN schema3.dim_cliente AS dw_cli ON (st_cli.id_cliente = dw_cli.id_cliente)
+GROUP BY 
+    dw_pro.sk_produto, dw_cli.sk_cliente, dw_loc.sk_localidade, dw_tem.sk_tempo;
+```
+
+## Adição de nova métrica
+
+A área de negócio usa a tabela fato em uma ferramenta de BI e precisou criar uma nova coluna, que calcula o resultado agregado por produto da seguinte forma:
+
+$\text{resultado}=\text{quantidade de produtos} * (\text{preço venda}-\text{custo produto})$
+
+Foi relatado que o painel de relatórios está tendo problemas de desempenho nos gráficos e tabelas que utilizam a métrica calculada. <br> Implementaremos o cálculo do resultado já dentro da tabela `fato_vendas`, através do ETL, para que a performance da ferramenta de BI melhore.
+Para isso, precisamos modificar o schema da tabela e em seguida inserir os dados novamente.
+
+Executaremos os comandos abaixo com o intuito de alterar a tabela `fato_vendas` e recarregar os dados.
+É possível encontrá-los consolidados [neste arquivo .sql](./sql/nova_metrica_fato.sql).
+
+### Alteração e reinserção dos dados da tabela fato_vendas
+
+```sql
+-- Incluindo mais uma coluna na tabela fato de vendas
+ALTER TABLE IF EXISTS schema3.fato_vendas
+    ADD COLUMN resultado numeric(10, 2) NOT NULL;
+
+-- Limpando a tabelas para reexecutar a carga
+TRUNCATE TABLE schema3.fato_vendas;
+
+-- Carregando novamente a tabela fato de vendas
+INSERT INTO schema3.fato_vendas (
+    sk_produto, 
+    sk_cliente, 
+    sk_localidade, 
+    sk_tempo, 
+    quantidade, 
+    preco_venda, 
+    custo_produto, 
+    receita_vendas,
+    resultado)
+SELECT 
+    dw_pro.sk_produto,
+    dw_cli.sk_cliente,
+    dw_loc.sk_localidade,
+    dw_tem.sk_tempo, 
+    SUM(st_ven.quantidade) AS quantidade, 
+    SUM(st_ven.preco_venda) AS preco_venda, 
+    SUM(st_ven.custo_produto) AS custo_produto, 
+    SUM(ROUND((CAST(st_ven.quantidade AS NUMERIC) * CAST(st_ven.preco_venda AS NUMERIC)), 2)) AS receita_vendas,
+    SUM(ROUND((CAST(quantidade AS NUMERIC) * CAST(preco_venda AS NUMERIC)), 2) - custo_produto) AS resultado 
+FROM 
+    schema2.st_ft_vendas AS st_ven
+    INNER JOIN schema2.st_ft_clientes AS st_cli ON (st_cli.id_cliente = st_ven.id_cliente)
+    INNER JOIN schema2.st_ft_localidades AS st_loc ON (st_loc.id_localidade = st_ven.id_localizacao)
+    INNER JOIN schema2.st_ft_produtos AS st_pro ON (st_pro.id_produto = st_ven.id_produto)
+    INNER JOIN schema3.dim_tempo AS dw_tem ON (
+        TO_CHAR(st_ven.data_transacao, 'YYYY-MM-DD') = TO_CHAR(dw_tem.data_completa, 'YYYY-MM-DD') AND
+        TO_CHAR(st_ven.data_transacao, 'HH24') = dw_tem.hora)
+    INNER JOIN schema3.dim_produto AS dw_pro ON (st_pro.id_produto = dw_pro.id_produto)
+    INNER JOIN schema3.dim_localidade AS dw_loc ON (st_loc.id_localidade = dw_loc.id_localidade)
+    INNER JOIN schema3.dim_cliente AS dw_cli ON (st_cli.id_cliente = dw_cli.id_cliente)
+GROUP BY 
+    dw_pro.sk_produto, dw_cli.sk_cliente, dw_loc.sk_localidade, dw_tem.sk_tempo;
+```
+
+### Resultado adição nova métrica
+
+![Dados nova métrica](./images/dados_nova_metrica.png)
