@@ -1,4 +1,4 @@
-# Local Data Wwarehouse com Docker
+# Local Data Warehouse com Docker
 
 ## Sumário
 - [Apresentação geral do projeto](#apresentação-geral-do-projeto)
@@ -44,6 +44,7 @@
 - [Adição de nova métrica](#adição-de-nova-métrica)
     - [Alteração e reinserção dos dados da tabela fato_vendas](#alteração-e-reinserção-dos-dados-da-tabela-fato_vendas)
     - [Resultado adição nova métrica](#resultado-adição-nova-métrica)
+- [Criação de Materialized View](#criação-de-materialized-view)
 
 
 ## Apresentação geral do projeto
@@ -894,3 +895,68 @@ GROUP BY
 ### Resultado adição nova métrica
 
 ![Dados nova métrica](./images/dados_nova_metrica.png)
+
+## Criação de Materialized View
+
+Um usuário do Data Warehouse reportou que a consulta abaixo está com problemas de perfomance.
+É possível encontrar todos os comandos SQL abaixo consolidados [neste arquivo .sql](./sql/consulta_dw.sql).
+
+```sql
+SELECT 
+    loc.estado, 
+    pro.categoria, 
+    cli.tipo AS tipo_cliente, 
+    tem.hora, 
+    SUM(ven.resultado)
+FROM
+    schema3.fato_vendas AS ven
+    INNER JOIN schema3.dim_produto AS pro USING(sk_produto) 
+    INNER JOIN schema3.dim_cliente AS cli USING(sk_cliente) 
+    INNER JOIN schema3.dim_localidade AS loc USING(sk_localidade)
+    INNER JOIN schema3.dim_tempo AS tem USING(sk_tempo) 
+GROUP BY loc.estado, pro.categoria, cli.tipo, tem.hora
+ORDER BY loc.estado, pro.categoria, cli.tipo, tem.hora;
+```
+
+Examinando o plano de execução da consulta, podemos ver que o problema não é a construçaõ da consulta, e a criação de particionamento e/ou indexação talvez não resolvam o problema.
+
+![Plano de execução da consulta](./images/plano_execucao_consulta.png)
+
+Uma alternativa é utilizar uma Materialized View, que nada mais que é uma View (uma consulta encapsulada) que guarda os dados em uma tabela temporária, que atualiza sob demanda. O benefício desse recurso é que não gerar os dados a cada consulta, pois eles estarão presentes na tabela temporária criada.
+
+Abaixo podemos ver o comando de criação, a evidência da criação e o plano de execução da Materialized View, respectivamente:
+
+```sql
+CREATE MATERIALIZED VIEW schema3.mv_relatorio AS
+SELECT 
+    loc.estado, 
+    pro.categoria, 
+    cli.tipo AS tipo_cliente, 
+    tem.hora, 
+    SUM(ven.resultado)
+FROM
+    schema3.fato_vendas AS ven
+    INNER JOIN schema3.dim_produto AS pro USING(sk_produto) 
+    INNER JOIN schema3.dim_cliente AS cli USING(sk_cliente) 
+    INNER JOIN schema3.dim_localidade AS loc USING(sk_localidade)
+    INNER JOIN schema3.dim_tempo AS tem USING(sk_tempo) 
+GROUP BY loc.estado, pro.categoria, cli.tipo, tem.hora
+ORDER BY loc.estado, pro.categoria, cli.tipo, tem.hora;
+```
+
+![Evidência de criação da Materialized View](./images/materialized_view_evidencia.png)
+
+![Plano de execução Materialized View](./images/materialized_view_plano_execucao.png)
+
+O uso de Materialized Views traz alguns pontos de atenção. Um deles, como comentado anteriormente, é a necessidade de atualizar a tabela temporária regularmente, para garantir que os dados reflitam o estado mais atual.
+
+Uma forma de garantir essa atualização seria criar um processo recorrente, que executa o comando de atualização a partir de um agendamento.
+Como estamos usando PostgreSQL, o `pg_cron` (https://github.com/citusdata/pg_cron) funciona perfeitamente para nossos proprósitos.
+
+Podemos executar, dentro do plugin, o comando abaixo para criar um agendamento que atualiza a Materialized View todos os dias ao meio-dia.
+
+```sql
+SELECT cron.schedule('REFRESH mv_relatorio', '0 12 * * *', 'REFRESH MATERIALIZED VIEW mv_relatorio;');
+```
+
+
