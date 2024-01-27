@@ -1,0 +1,52 @@
+# Cria o container
+docker run -dti --name dsa_projeto2 --rm ubuntu 
+
+## Execute os comandos abaixo no terminal do container
+# Entra em modo bash interativo
+bash
+
+# Instala utilitários
+apt-get update
+apt-get upgrade
+apt-get install curl nano wget unzip
+
+# Cria pasta de Downloads e entra nela
+mkdir Downloads
+cd Downloads
+
+# Baixa os arquivos para instalação do AWS CLI
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+
+# Descompacta o arquivo
+unzip awscliv2.zip
+
+# Executa a instalação
+./aws/install
+
+# Inicia configuração do AWS CLI
+aws configure
+
+# O comando de configuração pedir que você preencha alguns informações. Preencha da seguinte forma:
+
+Access key ID: <utilizar aqui a chave de acesso>
+Secret access key: <utilizar aqui a chave de acesso>
+Default region name: us-east-2
+Default output format: <deixe em branco e pressione enter>
+
+# Listando buckets no S3 para testar a autenticação
+aws s3 ls
+
+# Instala o pacote para autenticação da chave
+apt-get update && apt-get install -y gnupg software-properties-common
+
+# Faz download da chave
+wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | tee /usr/share/keyrings/hashicorp-archive-keyring.gpg
+
+# Ativa aa chave e inclui o repositório
+echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list
+
+# Instala o Terraform
+apt update && apt-get install terraform
+
+# Verifica a instalação
+terraform --version
